@@ -1,0 +1,481 @@
+/**
+ * Copyright (c) 2013, Robert Cherry * All rights reserved.
+ *
+ * This file is part of the Faust Editor.
+ *
+ * The Faust Editor is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * The Faust Editor is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * The Faust Editor. If not, see <http://www.gnu.org/licenses/>.
+ */
+package Editor.form;
+
+import Editor.FaustEditor;
+import io.resource.DataRef;
+import io.resource.ResourceDelegate;
+import io.resource.ResourceMolder;
+import io.resource.ResourceReader;
+import io.util.PackageUtils;
+import io.util.FileSearch;
+import io.util.FileUtils;
+import io.util.ManifestUtils;
+import java.awt.Point;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import Editor.renderer.DataTableCheckBoxRenderer;
+import Editor.renderer.DataTableRenderer;
+
+/**
+ *
+ * @author robert
+ */
+public class DataLoader extends javax.swing.JDialog {
+
+    // Variable Declaration
+    // Project Classes
+    private FaustEditor editor;
+    private ResourceDelegate delegate;
+    // End of Variable Declaration
+
+    public DataLoader(FaustEditor editor, ResourceDelegate delegate, boolean modal) {
+        super(editor, modal);
+        initComponents();
+
+        //
+        this.editor = editor;
+        this.delegate = delegate;
+
+        // Initialize
+        init();
+    }
+
+    private void init() {
+
+        // Grab the plugins
+        final File[] files = FileSearch.compriseListByExtension(new File(delegate.getAddonDirectory()), ResourceReader.MW_ARCHIVE_EXTENSION);
+
+        //
+        final String[] columnNames = {"Active", "Data Package"};
+
+        //
+        final Object[][] dataVector = new Object[files.length][2];
+
+        // Iterate over the set of plugins
+        for (int i = 0; i < dataVector.length; i++) {
+
+            // Grab the matching resource dataPackage
+            final File file = files[i];
+
+            //
+            dataVector[i][0] = false;
+            dataVector[i][1] = file;
+        }
+
+        // New Table Model
+        final DefaultTableModel model = new DefaultTableModel();
+        model.setDataVector(dataVector, columnNames);
+
+        // Apply the table model
+        packageJTable.setModel(model);
+
+        // Fixed column width for checkbox column
+        final int columnWidth = 64;
+
+        // Change the renderer for the first column to solve for JCheckBox
+        final TableColumn checkColumn = packageJTable.getColumnModel().getColumn(0);
+        checkColumn.setCellRenderer(new DataTableCheckBoxRenderer());
+        checkColumn.setMaxWidth(columnWidth);
+        checkColumn.setPreferredWidth(columnWidth);
+        checkColumn.setMinWidth(columnWidth);
+
+        //
+        final TableColumn pluginColumn = packageJTable.getColumnModel().getColumn(1);
+        pluginColumn.setCellRenderer(new DataTableRenderer());
+    }
+
+    private void apply() {
+
+        // Tell to delegate to flush all of its resources once you hit apply; will warn of unsaved changes later in dev.
+        delegate.flush();
+
+        // Gather all the actively selected checkboxed rows
+        for (int row = 0; row < packageJTable.getRowCount(); row++) {
+
+            // Whether or not to load this dataPackage
+            final Boolean active = (Boolean) packageJTable.getValueAt(row, 0);
+
+            // The actual dataPackage
+            final File file = (File) packageJTable.getValueAt(row, 1);
+
+            // Only load the actively checked plugins
+            if (active) {
+
+                // Contact the delegate
+                delegate.loadPackage(file, true);
+            }
+        }
+
+        // If the checkbox is checked; also load loose files
+        if (looseJCheckBox.isSelected()) {
+
+            // Load files located in the temp directory as well / only
+            delegate.loadLoose();
+        }
+
+        // Validate the delegate
+        delegate.validate();
+
+        // Check for conflictions
+        final DataRef[] conflictions = delegate.detectConflictions();
+
+        for (int i = 0; i < conflictions.length; i++) {
+            System.err.println("Conflcited State: " + conflictions[i].getDisplayName());
+        }
+
+        // Close this dialog
+        setVisible(false);
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        pluginJScrollPane = new javax.swing.JScrollPane();
+        packageJTable = new javax.swing.JTable() {
+            @Override public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        buttonJPanel = new javax.swing.JPanel();
+        looseJCheckBox = new javax.swing.JCheckBox();
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+        acceptJButton = new javax.swing.JButton();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
+        cancelJButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        manifestJButton = new javax.swing.JButton();
+        authorJLabel = new javax.swing.JLabel();
+        authorJField = new javax.swing.JTextField();
+        websiteJLabel = new javax.swing.JLabel();
+        emailJField = new javax.swing.JTextField();
+        versionJLabel = new javax.swing.JLabel();
+        versionJField = new javax.swing.JTextField();
+        verionJCheckBox = new javax.swing.JCheckBox();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Importing Data");
+
+        packageJTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        packageJTable.setFillsViewportHeight(true);
+        packageJTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                packageJTableMouseClicked(evt);
+            }
+        });
+        pluginJScrollPane.setViewportView(packageJTable);
+
+        buttonJPanel.setLayout(new javax.swing.BoxLayout(buttonJPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        looseJCheckBox.setText("Load Unpackaged Files");
+        buttonJPanel.add(looseJCheckBox);
+        buttonJPanel.add(filler2);
+
+        acceptJButton.setText("Accept");
+        acceptJButton.setMaximumSize(new java.awt.Dimension(88, 26));
+        acceptJButton.setMinimumSize(new java.awt.Dimension(88, 26));
+        acceptJButton.setPreferredSize(new java.awt.Dimension(88, 26));
+        acceptJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                acceptJButtonActionPerformed(evt);
+            }
+        });
+        buttonJPanel.add(acceptJButton);
+        buttonJPanel.add(filler1);
+
+        cancelJButton.setText("Cancel");
+        cancelJButton.setMaximumSize(new java.awt.Dimension(88, 26));
+        cancelJButton.setMinimumSize(new java.awt.Dimension(88, 26));
+        cancelJButton.setPreferredSize(new java.awt.Dimension(88, 26));
+        cancelJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelJButtonActionPerformed(evt);
+            }
+        });
+        buttonJPanel.add(cancelJButton);
+
+        manifestJButton.setText("View Manifest");
+        manifestJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manifestJButtonActionPerformed(evt);
+            }
+        });
+
+        authorJLabel.setText("Author:");
+        authorJLabel.setMaximumSize(new java.awt.Dimension(42, 20));
+        authorJLabel.setMinimumSize(new java.awt.Dimension(42, 20));
+        authorJLabel.setPreferredSize(new java.awt.Dimension(42, 20));
+
+        authorJField.setEditable(false);
+        authorJField.setEnabled(false);
+
+        websiteJLabel.setText("Email Address:");
+        websiteJLabel.setMaximumSize(new java.awt.Dimension(42, 20));
+        websiteJLabel.setMinimumSize(new java.awt.Dimension(42, 20));
+        websiteJLabel.setPreferredSize(new java.awt.Dimension(42, 20));
+
+        emailJField.setEditable(false);
+        emailJField.setEnabled(false);
+
+        versionJLabel.setText("Version");
+        versionJLabel.setMaximumSize(new java.awt.Dimension(42, 20));
+        versionJLabel.setMinimumSize(new java.awt.Dimension(42, 20));
+        versionJLabel.setPreferredSize(new java.awt.Dimension(42, 20));
+
+        versionJField.setEditable(false);
+        versionJField.setEnabled(false);
+
+        verionJCheckBox.setText("Latest Version");
+        verionJCheckBox.setEnabled(false);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(emailJField)
+                    .addComponent(versionJField, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(manifestJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(authorJLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(authorJField))
+                            .addComponent(versionJLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(websiteJLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addComponent(verionJCheckBox)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(authorJLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(authorJField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(websiteJLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(emailJField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(versionJLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(versionJField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(verionJCheckBox)
+                .addGap(18, 18, 18)
+                .addComponent(manifestJButton)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(buttonJPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 5, Short.MAX_VALUE)
+                        .addComponent(pluginJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(pluginJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(buttonJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void cancelJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelJButtonActionPerformed
+
+        // Cancel loading data packages
+        setVisible(false);
+    }//GEN-LAST:event_cancelJButtonActionPerformed
+
+    private void acceptJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptJButtonActionPerformed
+
+        // Apply Changes
+        apply();
+    }//GEN-LAST:event_acceptJButtonActionPerformed
+
+    private void packageJTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_packageJTableMouseClicked
+
+        // Grab the position
+        final Point position = evt.getPoint();
+
+        // Grab the row and column
+        int row = packageJTable.rowAtPoint(position);
+        int col = packageJTable.columnAtPoint(position);
+
+        //
+        final int clickCount = evt.getClickCount();
+
+        // Row must exist
+        if (row > -1 && col > -1) {
+
+            // Only the first column
+            if (col == 0) {
+
+                try {
+
+                    // Get the row and column
+                    final Boolean bool = Boolean.parseBoolean(String.valueOf(packageJTable.getValueAt(row, col)));
+
+                    // Change to opposite
+                    packageJTable.setValueAt(!bool, row, col);
+                } catch (NumberFormatException nfe) {
+                    //
+                }
+            } else if (col == 1) {
+
+                if (clickCount == 2) {
+                    //
+                    final File file = (File) packageJTable.getValueAt(row, 1);
+
+                    // Extract the acrhive to a temporary folder in the cache dir; may take a while
+                    final File temporary = PackageUtils.extract(delegate, file);
+
+                    //
+                    FileSearch search = new FileSearch(temporary, "manifest.xml", true);
+
+                    //
+                    search.perform();
+
+                    // Attempt to locate the manifest file inside of the dataPackage; this is essential to the integrity of all resources and their respective ids
+                    final File manifest = new File(search.getFirstResult());
+
+                    // Extract from manifest
+                    final String author = ManifestUtils.extractElement(manifest, "author");
+                    final String email = ManifestUtils.extractElement(manifest, "email");
+                    final String version = ManifestUtils.extractElement(manifest, "version");
+
+                    // Control setup
+                    authorJField.setText(author);
+                    emailJField.setText(email);
+                    versionJField.setText(version);
+
+                    //
+                    try {
+
+                        // Delete the manifest file
+                        FileUtils.eraseFile(manifest);
+                        FileUtils.eraseContents(temporary);
+                        FileUtils.eraseFile(temporary);
+                    } catch (IOException io) {
+                        //
+                    }
+                }
+            }
+        }
+    }//GEN-LAST:event_packageJTableMouseClicked
+
+    private void manifestJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manifestJButtonActionPerformed
+
+        // First we need a file
+        final File file = (File) packageJTable.getValueAt(packageJTable.getSelectedRow(), 1);
+
+        if (file != null) {
+
+            // Extract the acrhive to a temporary folder in the cache dir; may take a while
+            final File temporary = PackageUtils.extract(delegate, file);
+
+            //
+            FileSearch search = new FileSearch(temporary, "manifest.xml", true);
+
+            //
+            search.perform();
+
+            // Attempt to locate the manifest file inside of the dataPackage; this is essential to the integrity of all resources and their respective ids
+            final File manifest = new File(search.getFirstResult());
+
+            // Show the manifest viewer
+            final ManifestViewer viewer = new ManifestViewer(this, delegate, ResourceMolder.moldDocument(manifest), true);
+            viewer.setLocationRelativeTo(this);
+            viewer.setVisible(true);
+
+            // Delete the temporary folders and extracted folders
+            try {
+
+                // Delete the manifest
+                FileUtils.eraseFile(manifest);
+
+                // Destroy Cache dir
+                FileUtils.eraseContents(temporary);
+                FileUtils.eraseFile(temporary);
+            } catch (IOException ioe) {
+                System.err.println(ioe);
+            }
+        }
+    }//GEN-LAST:event_manifestJButtonActionPerformed
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton acceptJButton;
+    private javax.swing.JTextField authorJField;
+    private javax.swing.JLabel authorJLabel;
+    private javax.swing.JPanel buttonJPanel;
+    private javax.swing.JButton cancelJButton;
+    private javax.swing.JTextField emailJField;
+    private javax.swing.Box.Filler filler1;
+    private javax.swing.Box.Filler filler2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JCheckBox looseJCheckBox;
+    private javax.swing.JButton manifestJButton;
+    private javax.swing.JTable packageJTable;
+    private javax.swing.JScrollPane pluginJScrollPane;
+    private javax.swing.JCheckBox verionJCheckBox;
+    private javax.swing.JTextField versionJField;
+    private javax.swing.JLabel versionJLabel;
+    private javax.swing.JLabel websiteJLabel;
+    // End of variables declaration//GEN-END:variables
+}

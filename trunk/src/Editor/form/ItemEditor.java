@@ -100,7 +100,7 @@ public class ItemEditor extends javax.swing.JDialog implements TableModelListene
         final Class closs = getClass();
 
         //
-        final ImageIcon iconAdd = ResourceReader.readClassPathIcon(closs, "/icons/icon-add24.png");
+        final ImageIcon iconAdd = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-add24.png");
 
         //
         setupPackage();

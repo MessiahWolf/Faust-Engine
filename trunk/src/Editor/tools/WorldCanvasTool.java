@@ -99,9 +99,9 @@ public class WorldCanvasTool {
             final Class closs = getClass();
 
             //
-            selectorImage = kit.getImage(closs.getResource("/icons/icon-selector24.png"));
-            markerImage = kit.getImage(closs.getResource("/icons/icon-marker24.png"));
-            eraserImage = kit.getImage(closs.getResource("/icons/icon-eraser24.png"));
+            selectorImage = kit.getImage(closs.getResource("/Editor/icons/icon-selector24.png"));
+            markerImage = kit.getImage(closs.getResource("/Editor/icons/icon-marker24.png"));
+            eraserImage = kit.getImage(closs.getResource("/Editor/icons/icon-eraser24.png"));
         } catch (NullPointerException npe) {
         }
 

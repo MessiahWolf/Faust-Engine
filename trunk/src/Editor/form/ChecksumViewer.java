@@ -90,7 +90,7 @@ public class ChecksumViewer extends javax.swing.JDialog implements DropTargetLis
         final Class closs = getClass();
 
         // @icon-time :D
-        fileJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-open16.png"));
+        fileJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-open16.png"));
 
         //
         final DropTarget drop = new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);

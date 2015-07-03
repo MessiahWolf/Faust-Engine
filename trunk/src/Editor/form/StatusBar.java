@@ -79,10 +79,10 @@ public class StatusBar extends javax.swing.JPanel implements DelegateListener {
         tool = editor.getCanvas().getTool();
 
         //
-        iconInfo = ResourceReader.readClassPathIcon(closs, "/icons/icon-info16.png");
-        iconConflict = ResourceReader.readClassPathIcon(closs, "/icons/icon-warning24.png");
-        iconToolOn = ResourceReader.readClassPathIcon(closs, "/icons/icon-visible-on18.png");
-        iconToolOff = ResourceReader.readClassPathIcon(closs, "/icons/icon-visible-off18.png");
+        iconInfo = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-info16.png");
+        iconConflict = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-warning24.png");
+        iconToolOn = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-visible-on18.png");
+        iconToolOff = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-visible-off18.png");
 
         // Default
         conflictionJButton.setIcon(iconConflict);

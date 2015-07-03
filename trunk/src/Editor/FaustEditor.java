@@ -265,8 +265,8 @@ public class FaustEditor extends JFrame {
 
         // Change the icon for the application
         final ArrayList<Image> list = new ArrayList<>();
-        list.add(kit.getImage(closs.getResource("/stock/stock-frame16.png")));
-        list.add(kit.getImage(closs.getResource("/stock/stock-frame32.png")));
+        list.add(kit.getImage(closs.getResource("/Editor/stock/stock-frame16.png")));
+        list.add(kit.getImage(closs.getResource("/Editor/stock/stock-frame32.png")));
 
         // Give it both the 16x16 and 32x32
         setIconImages(list);
@@ -380,16 +380,18 @@ public class FaustEditor extends JFrame {
 
             //
             if (dataDirectory.equals("NULL")) {
-                findDataDirectory();
+                locateDataDirectory();
             }
         } catch (IOException fnfe) {
             createPropertyFile();
         }
     }
 
-    private void findDataDirectory() {
+    public void locateDataDirectory() {
 
         final JFileChooser chooser = new JFileChooser();
+
+        //
         chooser.setDialogTitle("Locate the Faust Data Directory");
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setCurrentDirectory(new File(""));

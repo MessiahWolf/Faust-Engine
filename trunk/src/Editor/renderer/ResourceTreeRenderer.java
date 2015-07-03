@@ -62,15 +62,15 @@ public class ResourceTreeRenderer extends DefaultTreeCellRenderer implements Tre
         final Class closs = getClass();
 
         // Grab Icons from jar
-        iconActor = ResourceReader.readClassPathIcon(closs,"/icons/icon-actor24.png");
-        iconItem = ResourceReader.readClassPathIcon(closs,"/icons/icon-item24.png");
-        iconAnimation = ResourceReader.readClassPathIcon(closs,"/icons/icon-animation24.png");
-        iconBackdrop = ResourceReader.readClassPathIcon(closs,"/icons/icon-background24.png");
-        iconMap = ResourceReader.readClassPathIcon(closs,"/icons/icon-map24.png");
-        iconPackage = ResourceReader.readClassPathIcon(closs,"/icons/icon-package24.png");
-        iconWorld = ResourceReader.readClassPathIcon(closs,"/icons/icon-world24.png");
-        iconTileset = ResourceReader.readClassPathIcon(closs,"/icons/icon-tileset24.png");
-        iconScript = ResourceReader.readClassPathIcon(closs,"/icons/icon-script24.png");
+        iconActor = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-actor24.png");
+        iconItem = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-item24.png");
+        iconAnimation = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-animation24.png");
+        iconBackdrop = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-background24.png");
+        iconMap = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-map24.png");
+        iconPackage = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-package24.png");
+        iconWorld = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-world24.png");
+        iconTileset = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-tileset24.png");
+        iconScript = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-script24.png");
     }
 
     @Override

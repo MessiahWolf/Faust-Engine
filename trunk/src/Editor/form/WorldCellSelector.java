@@ -86,7 +86,7 @@ public class WorldCellSelector implements ActionListener, DropTargetListener {
         final Class closs = getClass();
 
         //
-        iconMap = ResourceReader.readClassPathIcon(closs, "/icons/icon-map24.png");
+        iconMap = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-map24.png");
 
         // Instantiate the scroll pane
         scrollPane = new JScrollPane();
@@ -406,7 +406,7 @@ public class WorldCellSelector implements ActionListener, DropTargetListener {
             map.addMapListener(this);
 
             //
-            iconNull = new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/icon-world-null24.png")));
+            iconNull = new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Editor/icons/icon-world-null24.png")));
 
             // Initial update
             update();

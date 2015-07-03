@@ -75,20 +75,20 @@ public class UtilityToolbar extends javax.swing.JPanel {
             final Class closs = getClass();
 
             // Grab some icons from cache
-            mapJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-map24.png"));
-            actorJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-actor24.png"));
-            tilesetJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-tileset24.png"));
-            animationJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-animation24.png"));
-            backdropJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-background24.png"));
-            itemJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-item24.png"));
-            zoneJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-zone24.png"));
-            layerJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-layer24.png"));
-            packageJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-package24.png"));
-            worldJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-world24.png"));
-            labJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-lab24.png"));
-            scriptJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-script24.png"));
-            pictureJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-camera24.png"));
-            sumJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-checksum24.png"));
+            mapJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-map24.png"));
+            actorJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-actor24.png"));
+            tilesetJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-tileset24.png"));
+            animationJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-animation24.png"));
+            backdropJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-background24.png"));
+            itemJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-item24.png"));
+            zoneJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-zone24.png"));
+            layerJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-layer24.png"));
+            packageJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-package24.png"));
+            worldJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-world24.png"));
+            labJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-lab24.png"));
+            scriptJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-script24.png"));
+            pictureJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-camera24.png"));
+            sumJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-checksum24.png"));
         } catch (NullPointerException npe) {
             System.err.println(npe);
         }

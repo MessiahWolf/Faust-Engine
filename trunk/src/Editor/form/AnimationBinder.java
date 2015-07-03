@@ -65,7 +65,7 @@ public class AnimationBinder extends javax.swing.JDialog implements AnimationLis
         final Class closs = getClass();
 
         //
-        final ImageIcon icon = ResourceReader.readClassPathIcon(closs, "/icons/icon-animation24.png");
+        final ImageIcon icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-animation24.png");
 
         //
         //animationJButton.setFocusable(false);

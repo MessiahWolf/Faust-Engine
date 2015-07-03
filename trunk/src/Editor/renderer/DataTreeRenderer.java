@@ -55,11 +55,11 @@ public class DataTreeRenderer extends DefaultTreeCellRenderer implements TreeCel
         final Class closs = getClass();
         
         //
-        iconPackage = ResourceReader.readClassPathIcon(closs,"/icons/icon-package24.png");
-        iconImage = ResourceReader.readClassPathIcon(closs,"/icons/icon-image24.png");
-        iconXml = ResourceReader.readClassPathIcon(closs,"/icons/icon-xml24.png");
-        iconUnknown = ResourceReader.readClassPathIcon(closs,"/icons/icon-unknown24.png");
-        iconFolder = ResourceReader.readClassPathIcon(closs,"/icons/icon-folder24.png");
+        iconPackage = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-package24.png");
+        iconImage = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-image24.png");
+        iconXml = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-xml24.png");
+        iconUnknown = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-unknown24.png");
+        iconFolder = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-folder24.png");
     }
 
     @Override

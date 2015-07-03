@@ -272,15 +272,15 @@ public class Laboratory extends javax.swing.JDialog implements MapListener, Worl
         final Class closs = getClass();
 
         // Define Icons
-        final ImageIcon iconMarker = ResourceReader.readClassPathIcon(closs,"/icons/icon-zone16.png");
-        final ImageIcon iconRestart = ResourceReader.readClassPathIcon(closs,"/icons/icon-restart16.png");
-        final ImageIcon iconStart = ResourceReader.readClassPathIcon(closs,"/icons/icon-thread-start16.png");
-        final ImageIcon iconStop = ResourceReader.readClassPathIcon(closs,"/icons/icon-thread-stop16.png");
-        final ImageIcon iconMapPrevious = ResourceReader.readClassPathIcon(closs,"/icons/icon-previous16.png");
-        final ImageIcon iconMapNext = ResourceReader.readClassPathIcon(closs,"/icons/icon-next16.png");
-        final ImageIcon iconGrid = ResourceReader.readClassPathIcon(closs,"/icons/icon-grid16.png");
-        final ImageIcon iconGridColor = ResourceReader.readClassPathIcon(closs,"/icons/icon-grid-color16.png");
-        final ImageIcon iconTemplate = ResourceReader.readClassPathIcon(closs,"/icons/icon-template16.png");
+        final ImageIcon iconMarker = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-zone16.png");
+        final ImageIcon iconRestart = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-restart16.png");
+        final ImageIcon iconStart = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-thread-start16.png");
+        final ImageIcon iconStop = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-thread-stop16.png");
+        final ImageIcon iconMapPrevious = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-previous16.png");
+        final ImageIcon iconMapNext = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-next16.png");
+        final ImageIcon iconGrid = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-grid16.png");
+        final ImageIcon iconGridColor = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-grid-color16.png");
+        final ImageIcon iconTemplate = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-template16.png");
 
         // Apply to Buttons
         markerJButton.setIcon(iconMarker);

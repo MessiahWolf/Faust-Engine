@@ -130,8 +130,8 @@ public class PackageEditor extends javax.swing.JDialog {
         final Class closs = getClass();
 
         //
-        informationEnabledIcon = ResourceReader.readClassPathIcon(closs, "/icons/icon-visible-on18.png");
-        informationDisabledIcon = ResourceReader.readClassPathIcon(closs, "/icons/icon-visible-off18.png");
+        informationEnabledIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-visible-on18.png");
+        informationDisabledIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-visible-off18.png");
 
         //
         informationJButton.setIcon(informationDisabledIcon);
@@ -139,7 +139,7 @@ public class PackageEditor extends javax.swing.JDialog {
         //informationJButton.setContentAreaFilled(false);
 
         //
-        //guideJButton.setIcon(ResourceReader.readClassPathIcon(getClass(), "/icons/icon-info16.png"));
+        //guideJButton.setIcon(ResourceReader.readClassPathIcon(getClass(), "/Editor/icons/icon-info16.png"));
         //guideJButton.setFocusPainted(false);
         //guideJButton.setContentAreaFilled(false);
 

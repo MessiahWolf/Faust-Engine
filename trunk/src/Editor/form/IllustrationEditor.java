@@ -217,8 +217,8 @@ public class IllustrationEditor extends javax.swing.JDialog {
         final Class closs = getClass();
 
         //
-        autoCompleteJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-complete16.png"));
-        colorJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-color-chooser16.png"));
+        autoCompleteJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-complete16.png"));
+        colorJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-chooser16.png"));
 
         // Resource Disbaling section
         if (illustration instanceof Backdrop) {

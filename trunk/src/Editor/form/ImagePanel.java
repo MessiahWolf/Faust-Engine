@@ -63,8 +63,8 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
         final Class closs = getClass();
 
         //
-        iconPlay = ResourceReader.readClassPathIcon(closs, "/icons/icon-color-play24.png");
-        iconPause = ResourceReader.readClassPathIcon(closs, "/icons/icon-color-pause24.png");
+        iconPlay = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-play24.png");
+        iconPause = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-pause24.png");
 
         //
         pointFocal = new Point(0, 0);

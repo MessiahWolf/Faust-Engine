@@ -98,8 +98,8 @@ public class WorkspaceTabComponent extends JPanel {
         //
         closeJButton.setContentAreaFilled(false);
         closeJButton.setFocusPainted(false);
-        closeJButton.setIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/icon-close16.png"))));
-        closeJButton.setRolloverIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/icon-close-hover16.png"))));
+        closeJButton.setIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Editor/icons/icon-close16.png"))));
+        closeJButton.setRolloverIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Editor/icons/icon-close-hover16.png"))));
 
         //
         closeJButton.setPreferredSize(buttonDimension);

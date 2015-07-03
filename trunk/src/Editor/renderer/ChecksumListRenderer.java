@@ -43,8 +43,8 @@ public class ChecksumListRenderer extends JLabel implements ListCellRenderer {
         final Class closs = getClass();
 
         //
-        iconMD5 = ResourceReader.readClassPathIcon(closs, "/icons/icon-md30x9.png");
-        iconSHA1 = ResourceReader.readClassPathIcon(closs, "/icons/icon-sha30x9.png");
+        iconMD5 = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-md30x9.png");
+        iconSHA1 = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-sha30x9.png");
     }
 
     @Override

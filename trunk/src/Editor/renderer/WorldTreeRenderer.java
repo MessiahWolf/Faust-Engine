@@ -60,12 +60,12 @@ public class WorldTreeRenderer extends DefaultTreeCellRenderer implements TreeCe
         final Class closs = getClass();
 
         // Grab Icons from Classpath
-        iconWorld = ResourceReader.readClassPathIcon(closs,"/icons/icon-world24.png");
-        iconLayer = ResourceReader.readClassPathIcon(closs,"/icons/icon-layer24.png");
-        iconMap = ResourceReader.readClassPathIcon(closs,"/icons/icon-map24.png");
-        iconActor = ResourceReader.readClassPathIcon(closs,"/icons/icon-actor24.png");
-        iconTile = ResourceReader.readClassPathIcon(closs,"/icons/icon-tile24.png");
-        iconBackground = ResourceReader.readClassPathIcon(closs,"/icons/icon-background24.png");
+        iconWorld = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-world24.png");
+        iconLayer = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-layer24.png");
+        iconMap = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-map24.png");
+        iconActor = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-actor24.png");
+        iconTile = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-tile24.png");
+        iconBackground = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-background24.png");
     }
 
     @Override

@@ -88,11 +88,11 @@ public class ResourceSelector extends javax.swing.JDialog {
         final Class closs = getClass();
 
         //
-        backgroundJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-color-chooser16.png"));
+        backgroundJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-chooser16.png"));
         //backgroundJButton.setContentAreaFilled(false);
 
         //
-        informationJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/icons/icon-view18.png"));
+        informationJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-view18.png"));
         //informationJButton.setFocusPainted(false);
         //informationJButton.setContentAreaFilled(false);
 

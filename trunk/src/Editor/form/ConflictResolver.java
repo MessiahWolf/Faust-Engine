@@ -56,7 +56,7 @@ public class ConflictResolver extends javax.swing.JDialog {
         final Toolkit kit = Toolkit.getDefaultToolkit();
 
         //
-        final ImageIcon icon = ResourceReader.readClassPathIcon(closs, "/icons/icon-search16.png");
+        final ImageIcon icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-search16.png");
 
         //
         scanJButton.setIcon(icon);

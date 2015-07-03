@@ -53,13 +53,13 @@ public class DataListRenderer extends JLabel implements ListCellRenderer {
         final Class closs = getClass();
 
         //
-        iconAnimation = ResourceReader.readClassPathIcon(closs,"/icons/icon-animation24.png");
-        iconImage = ResourceReader.readClassPathIcon(closs,"/icons/icon-image24.png");
-        iconScript = ResourceReader.readClassPathIcon(closs,"/icons/icon-script24.png");
-        iconFolder = ResourceReader.readClassPathIcon(closs,"/icons/icon-folder24.png");
+        iconAnimation = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-animation24.png");
+        iconImage = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-image24.png");
+        iconScript = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-script24.png");
+        iconFolder = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-folder24.png");
 
         //
-        iconPackage = ResourceReader.readClassPathIcon(closs,"/icons/icon-package24.png");
+        iconPackage = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-package24.png");
     }
 
     @Override

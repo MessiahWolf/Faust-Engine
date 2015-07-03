@@ -233,14 +233,14 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         final Dimension dimension = new Dimension(32, 32);
 
         //
-        final ImageIcon attackDamageIcon = ResourceReader.readClassPathIcon(closs, "/icons/skill icons/icon-attackdamage.png");
-        final ImageIcon attackDamage16Icon = ResourceReader.readClassPathIcon(closs, "/icons/skill icons/icon-attackdamage16.png");
-        final ImageIcon attackDefenseIcon = ResourceReader.readClassPathIcon(closs, "/icons/skill icons/icon-attackdefense.png");
-        final ImageIcon attackDefense16Icon = ResourceReader.readClassPathIcon(closs, "/icons/skill icons/icon-attackdefense16.png");
-        final ImageIcon magicDamageIcon = ResourceReader.readClassPathIcon(closs, "/icons/skill icons/icon-magicdamage.png");
-        final ImageIcon magicDamage16Icon = ResourceReader.readClassPathIcon(closs, "/icons/skill icons/icon-magicdamage16.png");
-        final ImageIcon reset16Icon = ResourceReader.readClassPathIcon(closs, "/icons/icon-reset16.png");
-        final ImageIcon info14Icon = ResourceReader.readClassPathIcon(closs, "/icons/icon-info14.png");
+        final ImageIcon attackDamageIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-attackdamage.png");
+        final ImageIcon attackDamage16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-attackdamage16.png");
+        final ImageIcon attackDefenseIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-attackdefense.png");
+        final ImageIcon attackDefense16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-attackdefense16.png");
+        final ImageIcon magicDamageIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-magicdamage.png");
+        final ImageIcon magicDamage16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-magicdamage16.png");
+        final ImageIcon reset16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-reset16.png");
+        final ImageIcon info14Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-info14.png");
 
         // Our custom Action Listener
         final ActionListener evt = new ActionListener() {

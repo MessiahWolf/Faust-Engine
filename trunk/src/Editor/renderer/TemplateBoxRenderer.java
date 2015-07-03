@@ -44,7 +44,7 @@ public class TemplateBoxRenderer extends JLabel implements ListCellRenderer {
         final Class closs = getClass();
 
         //
-        iconLab = ResourceReader.readClassPathIcon(closs,"/icons/icon-lab24.png");
+        iconLab = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-lab24.png");
     }
 
     @Override

@@ -86,7 +86,7 @@ public class ChecksumMultiViewer extends javax.swing.JDialog {
             final Class closs = getClass();
 
             //
-            copyJButton.setIcon(ResourceReader.readClassPathIcon(closs,"/icons/icon-clipboard24.png"));
+            copyJButton.setIcon(ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-clipboard24.png"));
         } catch (NullPointerException ioe) {
             //
         }

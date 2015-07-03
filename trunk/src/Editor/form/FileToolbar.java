@@ -62,12 +62,12 @@ public class FileToolbar extends javax.swing.JPanel {
             // Grab source folder
             final Class closs = getClass();
 
-            loadJButton.setIcon(ResourceReader.readClassPathIcon(closs,"/icons/icon-open24.png"));
-            saveJButton.setIcon(ResourceReader.readClassPathIcon(closs,"/icons/icon-save24.png"));
-            changeJButton.setIcon(ResourceReader.readClassPathIcon(closs,"/icons/icon-queue24.png"));
-            selectorJButton.setIcon(ResourceReader.readClassPathIcon(closs,"/icons/icon-selector24.png"));
-            markerJButton.setIcon(ResourceReader.readClassPathIcon(closs,"/icons/icon-marker24.png"));
-            eraserJButton.setIcon(ResourceReader.readClassPathIcon(closs,"/icons/icon-eraser24.png"));
+            loadJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-open24.png"));
+            saveJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-save24.png"));
+            changeJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-queue24.png"));
+            selectorJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-selector24.png"));
+            markerJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-marker24.png"));
+            eraserJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-eraser24.png"));
         } catch (NullPointerException npe) {
             //
         }
@@ -252,14 +252,20 @@ public class FileToolbar extends javax.swing.JPanel {
             editor.open();
         } else if (delegate.getScanMode() == ResourceDelegate.SCAN_UNBIASED) {
 
-            // Flush
-            delegate.flush();
+            // Locate data Directory first.
+            if (editor.getDataDirectory() == null || editor.getDataDirectory().equals("")) {
+                editor.locateDataDirectory();
+            } else {
 
-            // Add all files unbiased
-            delegate.performScan(editor.getDataDirectory(), true, editor.acceptsDataPackages());
-            
-            //
-            delegate.validate();
+                // Flush
+                delegate.flush();
+
+                // Add all files unbiased
+                delegate.performScan(editor.getDataDirectory(), true, editor.acceptsDataPackages());
+
+                //
+                delegate.validate();
+            }
         }
     }//GEN-LAST:event_loadJButtonActionPerformed
 
@@ -312,16 +318,15 @@ public class FileToolbar extends javax.swing.JPanel {
     }//GEN-LAST:event_eraserJButtonActionPerformed
 
     private void changeJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeJButtonActionPerformed
-        
+
         // TODO add your handling code here:
         final ChangeMonitor monitor = new ChangeMonitor(editor, delegate, true);
         monitor.setLocationRelativeTo(editor);
         monitor.setVisible(true);
-        
+
         // Dispose of the monitor
         monitor.dispose();
     }//GEN-LAST:event_changeJButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton changeJButton;
     private javax.swing.JButton eraserJButton;

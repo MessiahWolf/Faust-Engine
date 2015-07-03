@@ -135,7 +135,7 @@ public class ResourceMiniViewer extends javax.swing.JDialog {
         final Class closs = getClass();
 
         // Define the color icon
-        final ImageIcon icon = ResourceReader.readClassPathIcon(closs, "/icons/icon-color-chooser24.png");
+        final ImageIcon icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-chooser24.png");
 
         // Adjust the colorJButton
         colorJButton.setIcon(icon);

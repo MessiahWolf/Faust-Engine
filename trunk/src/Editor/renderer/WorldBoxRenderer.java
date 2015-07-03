@@ -45,7 +45,7 @@ public class WorldBoxRenderer extends JLabel implements ListCellRenderer {
         final Class closs = getClass();
 
         //
-        iconWorld = ResourceReader.readClassPathIcon(closs,"/icons/icon-world24.png");
+        iconWorld = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-world24.png");
     }
 
     @Override

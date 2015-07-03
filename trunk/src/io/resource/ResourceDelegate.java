@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.EventListenerList;
 
@@ -401,10 +402,10 @@ public class ResourceDelegate {
             makeStructure();
 
             // Exit the application if we failed to locate the Data Folder; may soon show a file window to allow user to locate the directory.
-            JOptionPane.showMessageDialog(null, "Could not find the Faust Resource directory\nProgram Exitting...");
+            //JOptionPane.showMessageDialog(null, "Could not find the Faust Resource directory\nProgram Exitting...");
 
             // Exit the application
-            System.exit(0);
+            //System.exit(0);
         }
 
         // We added resources :D

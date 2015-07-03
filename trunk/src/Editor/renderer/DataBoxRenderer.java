@@ -45,7 +45,7 @@ public class DataBoxRenderer extends JLabel implements ListCellRenderer {
         final Class closs = getClass();
 
         //
-        iconPackage = ResourceReader.readClassPathIcon(closs,"/icons/icon-package16.png");
+        iconPackage = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-package16.png");
     }
 
     @Override

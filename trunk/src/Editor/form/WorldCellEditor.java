@@ -1,5 +1,7 @@
 /**
- * Copyright (c) 2013, Robert Cherry * All rights reserved.
+ * Copyright (c) 2013, Robert Cherry
+ * Last modified 2015, Hoang Tran
+ * All rights reserved.
  *
  * This file is part of the Faust Editor.
  *
@@ -28,7 +30,7 @@ import Editor.listener.ManifestBinder;
 
 /**
  *
- * @author Robert A. Cherry
+ * @author Robert A. Cherry, Hoang Tran
  */
 public class WorldCellEditor extends javax.swing.JDialog {
 
@@ -58,14 +60,20 @@ public class WorldCellEditor extends javax.swing.JDialog {
         init();
     }
 
-    private void init() {
+     private void init() {
 
         // Check to see if the world even exists
         setTitle("World Cell Editor: " + resource.getDisplayName());
 
-        //
-        widthJField.setValue(640);
-        heightJField.setValue(480);
+        // Displays default cell size only if the world cell doesn't exist
+        if (resource.getDisplayName() != null){
+            widthJField.setValue(resource.getWidth());
+            heightJField.setValue(resource.getHeight());
+        }
+        else{
+            widthJField.setValue(640);
+            heightJField.setValue(480);
+        }
 
         //
         setupManifestBinder();
@@ -116,10 +124,10 @@ public class WorldCellEditor extends javax.swing.JDialog {
 
             //
             final World world = resource.getWorld();
-
-            //
-            resource.setWidth((Integer) widthJField.getValue());
-            resource.setHeight((Integer) heightJField.getValue());
+            
+            // Fix applied: now allows creation of non-default cell sizes
+            resource.setWidth(((Number) widthJField.getValue()).intValue());
+            resource.setHeight(((Number) heightJField.getValue()).intValue());
 
             // Apply these changes to the fMap
             resource.setReferenceID(field_reference.getText());

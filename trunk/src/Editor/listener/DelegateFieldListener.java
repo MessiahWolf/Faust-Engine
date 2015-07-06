@@ -112,14 +112,14 @@ public class DelegateFieldListener implements DocumentListener {
                     }
 
                     // So if we are not editing an existing resource
-                    if (binder.isEditting() == false) {
+                    //if (binder.isEditting() == false) {
 
-                        // Deliver the message
-                        field.setToolTipText("\'" + text + (delegate.isConflicted(type, text) ? "\' is already in use" : "\' contains illegal characters"));
+                    // Deliver the message
+                    field.setToolTipText("\'" + text + (delegate.isConflicted(type, text) ? "\' is already in use" : "\' contains illegal characters"));
 
-                        //
-                        field.setForeground(delegate.isConflicted(type, text) ? colorConflict : colorError);
-                    }
+                    //
+                    field.setForeground(delegate.isConflicted(type, text) ? colorConflict : colorError);
+                    //}
                 }
 
                 // Update Checkbox

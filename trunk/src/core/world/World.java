@@ -147,8 +147,6 @@ public class World implements WorldResource, MapListener {
     @Override
     public void shadow(String referenceID, ResourceRequest request) {
 
-        System.err.println("World Instance shadowing request: " + request.getEditorId());
-
         // Waits for maps only
         requests.put(referenceID, request);
     }
@@ -156,14 +154,8 @@ public class World implements WorldResource, MapListener {
     @Override
     public void receive(String referenceID, WorldResource resource) {
 
-        //
-        System.out.println("World Instance recieving resource: " + resource.getDisplayName());
-
         // Only accept things we are looking for...
         if (requests.containsKey(referenceID)) {
-
-            //
-            System.out.println("Handling request for -> " + referenceID);
 
             // Check for resource image
             if (resource.getClass() == WorldCell.class) {
@@ -180,8 +172,6 @@ public class World implements WorldResource, MapListener {
                 // Remove request
                 requests.remove(referenceID);
             }
-        } else {
-            System.err.println("Key Ring does not contain such a request for -> " + referenceID);
         }
     }
 

@@ -97,25 +97,9 @@ public class Backdrop extends Illustration {
             // Begin drawing the attributeRows and attributeColumns;
             if (picture.getImage() != null) {
 
-                //
-                int tempRows = blockRows;
-                int tempCols = blockColumns;
-
-                //
-                if (stretch) {
-
-                    //
-                    if (map != null) {
-
-                        //
-                        tempRows = map.getWidth() / blockWidth;
-                        tempCols = map.getHeight() / blockHeight;
-                    }
-                }
-
                 // Match block rows and columns
-                for (int i = 0; i < tempRows; i++) {
-                    for (int j = 0; j < tempCols; j++) {
+                for (int i = 0; i < blockRows; i++) {
+                    for (int j = 0; j < blockColumns; j++) {
 
                         // Draw the image adjusted to offsets
                         manet.drawImage(picture.getImage(), blockXOffset + (i * blockWidth), blockYOffset + (j * blockHeight), obs);
@@ -130,6 +114,22 @@ public class Backdrop extends Illustration {
 
         // !WIP
         return image;
+    }
+
+    public void adapt(int width, int height) {
+
+        //
+        stretch = true;
+
+        //
+        blockRows = (width / blockWidth) + 1;
+        blockColumns = (height / blockHeight) + 1;
+
+        //
+        System.err.println("Width: " + width);
+        System.err.println("Height: " + height);
+        System.out.println("Block Width: " + blockWidth);
+        System.out.println("Block Height: " + blockHeight);
     }
 
     @Override

@@ -106,6 +106,7 @@ public class WorldEditor extends javax.swing.JDialog {
 
         // Binding stuff manually.
         binder.bind(ManifestBinder.BOX_DELEGATE, box_delegate);
+        binder.bind(ManifestBinder.BUTTON_FINISH, button_finish);
         binder.bind(ManifestBinder.BUTTON_GENERATE, button_generate);
 
         // Fields
@@ -140,7 +141,7 @@ public class WorldEditor extends javax.swing.JDialog {
 
         buttonJPanel = new javax.swing.JPanel();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
-        finishJButton = new javax.swing.JButton();
+        button_finish = new javax.swing.JButton();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
         cancelJButton = new javax.swing.JButton();
         mainTabbedPane = new javax.swing.JTabbedPane();
@@ -171,16 +172,16 @@ public class WorldEditor extends javax.swing.JDialog {
         buttonJPanel.setLayout(new javax.swing.BoxLayout(buttonJPanel, javax.swing.BoxLayout.LINE_AXIS));
         buttonJPanel.add(filler1);
 
-        finishJButton.setText("Finish");
-        finishJButton.setMaximumSize(new java.awt.Dimension(88, 26));
-        finishJButton.setMinimumSize(new java.awt.Dimension(88, 26));
-        finishJButton.setPreferredSize(new java.awt.Dimension(88, 26));
-        finishJButton.addActionListener(new java.awt.event.ActionListener() {
+        button_finish.setText("Finish");
+        button_finish.setMaximumSize(new java.awt.Dimension(88, 26));
+        button_finish.setMinimumSize(new java.awt.Dimension(88, 26));
+        button_finish.setPreferredSize(new java.awt.Dimension(88, 26));
+        button_finish.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                finishJButtonActionPerformed(evt);
+                button_finishActionPerformed(evt);
             }
         });
-        buttonJPanel.add(finishJButton);
+        buttonJPanel.add(button_finish);
         buttonJPanel.add(filler2);
 
         cancelJButton.setText("Cancel");
@@ -205,7 +206,6 @@ public class WorldEditor extends javax.swing.JDialog {
         settingJPanel.setLayout(settingJPanelLayout);
 
         pluginJLabel.setText("Part of Package:");
-        pluginJLabel.setEnabled(false);
         pluginJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
         pluginJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
         pluginJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
@@ -215,6 +215,7 @@ public class WorldEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         settingJPanel.add(pluginJLabel, gridBagConstraints);
 
+        field_plugin.setEditable(false);
         field_plugin.setColumns(20);
         field_plugin.setEnabled(false);
         field_plugin.setMaximumSize(new java.awt.Dimension(134, 22));
@@ -227,7 +228,6 @@ public class WorldEditor extends javax.swing.JDialog {
 
         widthJLabel.setForeground(new java.awt.Color(51, 51, 51));
         widthJLabel.setText("Canvas Width:");
-        widthJLabel.setEnabled(false);
         widthJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
         widthJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
         widthJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
@@ -238,7 +238,6 @@ public class WorldEditor extends javax.swing.JDialog {
 
         heightJLabel.setForeground(new java.awt.Color(51, 51, 51));
         heightJLabel.setText("Canvas Height:");
-        heightJLabel.setEnabled(false);
         heightJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
         heightJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
         heightJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
@@ -310,7 +309,6 @@ public class WorldEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 6;
         settingJPanel.add(displayJLabel, gridBagConstraints);
 
-        field_width.setEditable(false);
         field_width.setColumns(20);
         field_width.setMaximumSize(new java.awt.Dimension(134, 22));
         field_width.setMinimumSize(new java.awt.Dimension(134, 22));
@@ -320,7 +318,6 @@ public class WorldEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         settingJPanel.add(field_width, gridBagConstraints);
 
-        field_height.setEditable(false);
         field_height.setColumns(20);
         field_height.setMaximumSize(new java.awt.Dimension(134, 22));
         field_height.setMinimumSize(new java.awt.Dimension(134, 22));
@@ -387,10 +384,10 @@ public class WorldEditor extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void finishJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_finishJButtonActionPerformed
+    private void button_finishActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_finishActionPerformed
         // Finish
         finish();
-    }//GEN-LAST:event_finishJButtonActionPerformed
+    }//GEN-LAST:event_button_finishActionPerformed
 
     private void cancelJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelJButtonActionPerformed
         // Cancel
@@ -432,6 +429,7 @@ public class WorldEditor extends javax.swing.JDialog {
     }//GEN-LAST:event_button_generateActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonJPanel;
+    private javax.swing.JButton button_finish;
     private javax.swing.JButton button_generate;
     private javax.swing.JButton cancelJButton;
     private javax.swing.JLabel displayJLabel;
@@ -443,7 +441,6 @@ public class WorldEditor extends javax.swing.JDialog {
     private javax.swing.JTextField field_width;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
-    private javax.swing.JButton finishJButton;
     private javax.swing.JLabel heightJLabel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTabbedPane mainTabbedPane;

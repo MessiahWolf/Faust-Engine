@@ -44,7 +44,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.EventListenerList;
 
@@ -1546,7 +1545,7 @@ public class ResourceDelegate {
             }
 
             //
-            conflicted = count > 0 ? true : false;
+            conflicted = count > 1 ? true : false;
         }
 
         //

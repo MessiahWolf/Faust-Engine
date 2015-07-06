@@ -8,6 +8,7 @@ import core.event.AnimationEvent;
 import core.event.AnimationListener;
 import core.world.Animation;
 import core.world.Backdrop;
+import core.world.Illustration;
 import core.world.Picture;
 import core.world.Tileset;
 import io.resource.ResourceReader;
@@ -142,12 +143,40 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
         }
     }
 
-    public void forceResize(Dimension dimension) {
+    public void updatePanelSize() {
+
+        if (resource == null) {
+            return;
+        }
+
+        //
+        Dimension dimension = getPreferredSize();
+
+        //
+        if (resource instanceof Illustration) {
+
+            //
+            Picture picture = ((Illustration) resource).getPicture();
+
+            //
+            if (picture != null) {
+                dimension = new Dimension(picture.getWidth(), picture.getHeight());
+            }
+        } else if (resource instanceof Picture) {
+
+            //
+            Picture picture = (Picture) resource;
+
+            //
+            if (picture != null) {
+                dimension = new Dimension(picture.getWidth(), picture.getHeight());
+            }
+        }
 
         // Fit to imagePanel size
         setPreferredSize(dimension);
 
-        final JViewport port = new JViewport();
+        final JViewport port = parentPane.getViewport();
         port.setPreferredSize(dimension);
         port.setView(this);
 
@@ -184,7 +213,11 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
             } else if (resource instanceof Backdrop) {
 
                 //
+                Dimension preferred = getPreferredSize();
+
+                //
                 Backdrop backdrop = (Backdrop) resource;
+                backdrop.adapt(preferred.width, preferred.height);
 
                 //
                 final Image image = backdrop.draw(this, 1.0f);

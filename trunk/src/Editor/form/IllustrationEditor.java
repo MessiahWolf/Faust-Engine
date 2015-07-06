@@ -45,6 +45,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import Editor.listener.ManifestBinder;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -56,11 +57,14 @@ public class IllustrationEditor extends javax.swing.JDialog {
     // Java Native Classes
     private ArrayList<Rectangle> array;
     private Color colorOutline = Color.BLACK;
+    // Java Classes
+    private ImageIcon iconLock;
+    private ImageIcon iconUnlock;
     // Project Classes
     private AnimationViewer viewer;
     private ManifestBinder binder;
     private Picture picture;
-    private DelegateCheckBox box;
+    private DelegateCheckBox box_delegate;
     private Illustration illustration;
     private ImagePanel imagePanel;
     private ResourceDelegate delegate;
@@ -89,17 +93,139 @@ public class IllustrationEditor extends javax.swing.JDialog {
         //
         setupResource();
 
+        //
+        setupManifestBinder();
+
         // Setup the controls
         setupDialog();
 
-        // Set as viewport view
-        imageJScrollPane.setViewportView(imagePanel);
-
         // Refresh everything
-        refresh();
+        updateAnimationViewer();
+    }
+
+    private void commit() {
+
+        // Clear the list
+        updateAnimationViewer();
+
+        // Place the values in the graphic attributes map
+        try {
+
+            //
+            illustration.setReferenceID(binder.getReferenceID());
+            illustration.setReferenceName(binder.getReferenceName());
+            illustration.setDisplayName(binder.getDisplayName());
+            illustration.setPicture(picture);
+            illustration.setPictureInfo(picture.getPackageId(), picture.getReferenceID());
+
+            // Number formatter
+            final NumberFormat format = NumberFormat.getInstance();
+
+            // Set Rows and Columns
+            illustration.setBlockRows(format.parse(String.valueOf(blockRowJField.getValue())).intValue());
+            illustration.setBlockColumns(format.parse(String.valueOf(blockColumnJField.getValue())).intValue());
+
+            // Set H and V Gap
+            illustration.setBlockHGap(format.parse(String.valueOf(blockHGapJField.getValue())).intValue());
+            illustration.setBlockVGap(format.parse(String.valueOf(blockVGapJField.getValue())).intValue());
+
+            // Set X and Y Offset
+            illustration.setBlockXOffset(format.parse(String.valueOf(blockXOffsetJField.getValue())).intValue());
+            illustration.setBlockYOffset(format.parse(String.valueOf(blockYOffsetJField.getValue())).intValue());
+
+            // Set width and height
+            illustration.setBlockWidth(format.parse(String.valueOf(blockWidthJField.getValue())).intValue());
+            illustration.setBlockHeight(format.parse(String.valueOf(blockWidthJField.getValue())).intValue());
+
+            // Ensure value reflection in attributes map
+            illustration.updateAttributes();
+
+            // Validate the graphicset
+            illustration.validate();
+
+            // Easy Peasy
+            ResourceWriter.write(delegate, illustration);
+
+            // Add to delegate
+            delegate.addResource(illustration);
+
+        } catch (ParseException pe) {
+            System.err.println(pe);
+        }
+    }
+
+    private void activateControls(boolean bool) {
+
+        //
+        imageJButton.setEnabled(bool);
+
+        // Deactivate these controls as well.
+        blockWidthJField.setEnabled(bool);
+        blockWidthJSpinner.setEnabled(bool);
+
+        blockHeightJField.setEnabled(bool);
+        blockHeightJSpinner.setEnabled(bool);
+
+        blockRowJField.setEnabled(bool);
+        blockRowJSpinner.setEnabled(bool);
+
+        blockColumnJField.setEnabled(bool);
+        blockColumnJSpinner.setEnabled(bool);
+
+        blockHGapJField.setEnabled(bool);
+        blockHGapJSpinner.setEnabled(bool);
+
+        blockVGapJField.setEnabled(bool);
+        blockVGapJSpinner.setEnabled(bool);
+
+        blockXOffsetJField.setEnabled(bool);
+        blockXOffsetJSpinner.setEnabled(bool);
+
+        blockYOffsetJField.setEnabled(bool);
+        blockYOffsetJSpinner.setEnabled(bool);
+
+        //
+        stretchJCheckBox.setEnabled(bool);
     }
 
     private void updateAnimationViewer() {
+
+        // Clear the current Collection
+        if (array != null) {
+
+            // Clear the current rectangle list / invalidate
+            array.clear();
+
+            //
+            final int graphicWidth = picture == null || picture.getImage() == null ? 0 : picture.getImage().getWidth(this);
+            final int graphicHeight = picture == null || picture.getImage() == null ? 0 : picture.getImage().getHeight(this);
+
+            // Store for a second and solve for backdrops
+            final int blockWidth = illustration instanceof Backdrop ? graphicWidth : ((Number) blockWidthJSpinner.getValue()).intValue();
+            final int blockHeight = illustration instanceof Backdrop ? graphicHeight : ((Number) blockHeightJSpinner.getValue()).intValue();
+
+            //
+            final int blockXOffset = ((Number) blockXOffsetJSpinner.getValue()).intValue();
+            final int blockYOffset = ((Number) blockYOffsetJSpinner.getValue()).intValue();
+            final int blockHGap = ((Number) blockHGapJSpinner.getValue()).intValue();
+            final int blockVGap = ((Number) blockVGapJSpinner.getValue()).intValue();
+            final int blockRows = ((Number) blockRowJSpinner.getValue()).intValue();
+            final int blockColumns = ((Number) blockColumnJSpinner.getValue()).intValue();
+
+            // Create the boxes which mimic the slices to be made
+            for (int row = 0; row < blockRows; row++) {
+
+                //
+                for (int col = 0; col < blockColumns; col++) {
+
+                    // Create the new rectangle at the precise location of the cut
+                    final Rectangle rectangle = new Rectangle(blockXOffset + (row * (blockWidth + blockHGap)), blockYOffset + (col * (blockHeight + blockVGap)), blockWidth, blockHeight);
+
+                    // Populate the rectangle arraylist
+                    array.add(rectangle);
+                }
+            }
+        }
 
         //
         if (viewer != null) {
@@ -118,19 +244,46 @@ public class IllustrationEditor extends javax.swing.JDialog {
             animation.setBlockYOffset(((Number) blockYOffsetJSpinner.getValue()).intValue());
             animation.setPicture(picture);
             animation.updateAttributes();
-
-            try {
-                //
-                animation.validate();
-            } catch (java.awt.image.RasterFormatException rfe) {
-                System.out.println("Found it");
-            }
+            animation.validate();
 
             // Give it the animation
             viewer.setAnimation(animation);
         }
+
+        // Repaint
+        repaint();
     }
 
+    private void updateStretchBox() {
+
+        //
+        final Backdrop backdrop = (Backdrop) illustration;
+
+        //
+        final boolean bool = stretchJCheckBox.isSelected();
+
+        // Set it in the backdrop
+        backdrop.setStretching(bool);
+
+        // The backdrop is set to stretch to bounds
+        if (bool == true) {
+
+            // When true disable the row and col fields and spinners
+            blockRowJSpinner.setEnabled(false);
+            blockRowJField.setEnabled(false);
+            blockColumnJSpinner.setEnabled(false);
+            blockColumnJField.setEnabled(false);
+        } else {
+
+            //
+            blockRowJSpinner.setEnabled(true);
+            blockColumnJSpinner.setEnabled(true);
+            blockColumnJField.setEnabled(true);
+            blockRowJField.setEnabled(true);
+        }
+    }
+
+    // <editor-fold desc="Editor Fold: Setup Methods" defaultstate="collapsed">
     private void setupResource() {
 
         // @note Creating or Adapting to resource given
@@ -143,45 +296,12 @@ public class IllustrationEditor extends javax.swing.JDialog {
                 picture = illustration.getPicture();
 
                 // Do the graphic check
-                performGraphicCheck();
+                setupGrapic();
             }
         }
     }
 
     private void setupDialog() {
-
-        // Giving models to spinners
-        blockRowJSpinner.setModel(getSpinnerModelInstance());
-        blockColumnJSpinner.setModel(getSpinnerModelInstance());
-        blockWidthJSpinner.setModel(getSpinnerModelInstance());
-        blockHeightJSpinner.setModel(getSpinnerModelInstance());
-        blockHGapJSpinner.setModel(getSpinnerModelInstance());
-        blockVGapJSpinner.setModel(getSpinnerModelInstance());
-        blockXOffsetJSpinner.setModel(getSpinnerModelInstance());
-        blockYOffsetJSpinner.setModel(getSpinnerModelInstance());
-
-        // Attempt to set to preset values from image attributes
-        blockRowJSpinner.setValue(illustration.getBlockRows());
-        blockColumnJField.setValue(illustration.getBlockColumns());
-        blockXOffsetJField.setValue(illustration.getBlockXOffset());
-        blockYOffsetJField.setValue(illustration.getBlockYOffset());
-        blockVGapJField.setValue(illustration.getBlockHGap());
-        blockHGapJField.setValue(illustration.getBlockVGap());
-        blockWidthJField.setValue(illustration.getBlockWidth());
-        blockHeightJField.setValue(illustration.getBlockHeight());
-
-        //
-        swapCheckboxLimits(true);
-
-        //
-        final SpinnerNumberModel model = new SpinnerNumberModel(illustration instanceof Animation ? ((Animation) illustration).getDelay() : 0, 0, 10000, 1);
-        delayJSpinner.setModel(model);
-
-        //
-        setupManifestBinder();
-
-        //
-        settingJPanel.setLayout(null);
 
         //
         imagePanel = new ImagePanel(imageJScrollPane) {
@@ -206,6 +326,9 @@ public class IllustrationEditor extends javax.swing.JDialog {
         imagePanel.setShowTextile(true);
         imagePanel.setShowImage(false);
 
+        // Set as viewport view
+        imagePanel.updatePanelSize();
+
         // Set TItle -- I will reorganize all Dialogs soon so that the code appears cleaner
         if (illustration.getDisplayName() != null) {
             setTitle("Illustration Editing: " + illustration.getDisplayName());
@@ -213,12 +336,58 @@ public class IllustrationEditor extends javax.swing.JDialog {
             setTitle("Illustration Editor");
         }
 
+        // Giving models to spinners
+        blockRowJSpinner.setModel(new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1));
+        blockColumnJSpinner.setModel(new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1));
+        blockWidthJSpinner.setModel(new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1));
+        blockHeightJSpinner.setModel(new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1));
+        blockHGapJSpinner.setModel(new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1));
+        blockVGapJSpinner.setModel(new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1));
+        blockXOffsetJSpinner.setModel(new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1));
+        blockYOffsetJSpinner.setModel(new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1));
+
+        // Attempt to set to preset values from image attributes
+        blockRowJSpinner.setValue(illustration.getBlockRows());
+        blockColumnJField.setValue(illustration.getBlockColumns());
+        blockXOffsetJField.setValue(illustration.getBlockXOffset());
+        blockYOffsetJField.setValue(illustration.getBlockYOffset());
+        blockVGapJField.setValue(illustration.getBlockHGap());
+        blockHGapJField.setValue(illustration.getBlockVGap());
+        blockWidthJField.setValue(illustration.getBlockWidth());
+        blockHeightJField.setValue(illustration.getBlockHeight());
+
+        //
+        final SpinnerNumberModel model = new SpinnerNumberModel(illustration instanceof Animation ? ((Animation) illustration).getDelay() : 0, 0, 10000, 1);
+        delayJSpinner.setModel(model);
+
+        //
+        settingJPanel.setLayout(null);
+
+        // SETTING UP BUTTONS
         // Grab the toolkit to grab some icons from the classpath
         final Class closs = getClass();
 
         //
         autoCompleteJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-complete16.png"));
         colorJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-chooser16.png"));
+
+        //
+        iconLock = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-locked24.png");
+        iconUnlock = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-unlocked24.png");
+
+        // Button Section
+        boolean bool = delegate.exists(illustration);
+
+        // If the resource existed before dialog started, lock permission to change
+        lockJButton.setContentAreaFilled(false);
+        lockJButton.setFocusPainted(false);
+        lockJButton.setIcon(bool ? iconLock : iconUnlock);
+        lockJButton.setText(bool ? "Permission Locked" : "Permission Unlocked");
+        lockJButton.setToolTipText(bool ? "Click to Unlock Change Permissions" : "Click to Lock Change Permissions");
+        binder.lock(bool);
+
+        //
+        activateControls(!bool);
 
         // Resource Disbaling section
         if (illustration instanceof Backdrop) {
@@ -241,9 +410,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
 
             //
             nullJLabel1.setText("Change how the Image will be Repeated");
-
-            // Changing the Title text
-            titleJLabel.setText("Change and View Backdrops");
         } else if (illustration instanceof Animation) {
 
             //
@@ -253,9 +419,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
 
             //
             nullJLabel6.setEnabled(false);
-
-            //
-            titleJLabel.setText("Change and View Animations");
 
             //
             stretchJCheckBox.setEnabled(false);
@@ -274,9 +437,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
             nullJLabel6.setEnabled(false);
 
             //
-            titleJLabel.setText("Change and View Tilesets");
-
-            //
             stretchJCheckBox.setEnabled(false);
         }
     }
@@ -284,14 +444,15 @@ public class IllustrationEditor extends javax.swing.JDialog {
     private void setupManifestBinder() {
 
         //
-        box = new DelegateCheckBox(delegate);
-        buttonJPanel.add(box, 0);
+        box_delegate = new DelegateCheckBox(delegate);
+        buttonJPanel.add(box_delegate, 0);
 
         // Testing it out.
         binder = new ManifestBinder(delegate, illustration);
 
         // Binding stuff manually.
-        binder.bind(ManifestBinder.BOX_DELEGATE, box);
+        binder.bind(ManifestBinder.BOX_DELEGATE, box_delegate);
+        binder.bind(ManifestBinder.BUTTON_FINISH, commitJButton);
         binder.bind(ManifestBinder.BUTTON_GENERATE, generateJButton);
 
         //
@@ -306,7 +467,8 @@ public class IllustrationEditor extends javax.swing.JDialog {
         binder.invoke();
 
         //
-        binder.setEdit(delegate.getInstanceCount(illustration) >= 1 ? true : false);
+        binder.setEdit(delegate.exists(illustration));
+        binder.lock(delegate.exists(illustration));
         generateJButton.setEnabled(!binder.isEditting());
     }
 
@@ -319,135 +481,10 @@ public class IllustrationEditor extends javax.swing.JDialog {
         updateAnimationViewer();
     }
 
-    private void finish() {
-
-        // Clear the list
-        refresh();
-
-        // Place the values in the graphic attributes map
-        try {
-
-            // Ask first
-            if (box.isSelected()) {
-
-                // Number formatter
-                final NumberFormat format = NumberFormat.getInstance();
-
-                // Set Rows and Columns
-                illustration.setBlockRows(format.parse(String.valueOf(blockRowJField.getValue())).intValue());
-                illustration.setBlockColumns(format.parse(String.valueOf(blockColumnJField.getValue())).intValue());
-
-                // Set H and V Gap
-                illustration.setBlockHGap(format.parse(String.valueOf(blockHGapJField.getValue())).intValue());
-                illustration.setBlockVGap(format.parse(String.valueOf(blockVGapJField.getValue())).intValue());
-
-                // Set X and Y Offset
-                illustration.setBlockXOffset(format.parse(String.valueOf(blockXOffsetJField.getValue())).intValue());
-                illustration.setBlockYOffset(format.parse(String.valueOf(blockYOffsetJField.getValue())).intValue());
-
-                // Set width and height
-                illustration.setBlockWidth(format.parse(String.valueOf(blockWidthJField.getValue())).intValue());
-                illustration.setBlockHeight(format.parse(String.valueOf(blockWidthJField.getValue())).intValue());
-
-                //
-                write();
-            }
-        } catch (ParseException pe) {
-            System.err.println(pe);
-        }
-    }
-
-    private void write() {
-
-        // If we can cut the image up into a graphic set
-        if (box.isSelected()) {
-
-            //
-            illustration.setReferenceID(binder.getReferenceID());
-            illustration.setReferenceName(binder.getReferenceName());
-            illustration.setDisplayName(binder.getDisplayName());
-            illustration.setPicture(picture);
-            illustration.setPictureInfo(picture.getPackageId(), picture.getReferenceID());
-
-            // Ensure value reflection in attributes map
-            illustration.updateAttributes();
-
-            // Validate the graphicset
-            illustration.validate();
-
-            // Easy Peasy
-            ResourceWriter.write(delegate, illustration);
-
-            // Add to delegate
-            delegate.addResource(illustration);
-
-            // Close this Dialog
-            setVisible(false);
-        } else {
-            JOptionPane.showMessageDialog(this, "Please check the information provided for fields marked invalid");
-        }
-    }
-
-    private void refresh() {
-
-        // Clear the current Collection
-        if (array != null) {
-
-            // Clear the current rectangle list / invalidate
-            array.clear();
-
-            //
-            final int graphicWidth = picture == null || picture.getImage() == null ? 0 : picture.getImage().getWidth(this);
-            final int graphicHeight = picture == null || picture.getImage() == null ? 0 : picture.getImage().getHeight(this);
-
-            // Store for a second and solve for backdrops
-            final int blockWidth = illustration instanceof Backdrop ? graphicWidth : ((Number) blockWidthJSpinner.getValue()).intValue();
-            final int blockHeight = illustration instanceof Backdrop ? graphicHeight : ((Number) blockHeightJSpinner.getValue()).intValue();
-
-            //
-            final int blockXOffset = ((Number) blockXOffsetJSpinner.getValue()).intValue();
-            final int blockYOffset = ((Number) blockYOffsetJSpinner.getValue()).intValue();
-            final int blockHGap = ((Number) blockHGapJSpinner.getValue()).intValue();
-            final int blockVGap = ((Number) blockVGapJSpinner.getValue()).intValue();
-            final int blockRows = ((Number) blockRowJSpinner.getValue()).intValue();
-            final int blockColumns = ((Number) blockColumnJSpinner.getValue()).intValue();
-
-            //
-            int totalWidth;
-            int totalHeight;
-
-            // Create the boxes which mimic the slices to be made
-            for (int row = 0; row < blockRows; row++) {
-
-                //
-                for (int col = 0; col < blockColumns; col++) {
-
-                    // Create the new rectangle at the precise location of the cut
-                    final Rectangle rectangle = new Rectangle(blockXOffset + (row * (blockWidth + blockHGap)), blockYOffset + (col * (blockHeight + blockVGap)), blockWidth, blockHeight);
-
-                    // Populate the rectangle arraylist
-                    array.add(rectangle);
-                }
-            }
-
-            //
-            totalWidth = blockXOffset + (blockRows * (blockWidth + blockHGap));
-            totalWidth -= blockRows > 1 ? blockHGap : 0;
-            totalHeight = blockYOffset + (blockColumns * (blockHeight + blockVGap));
-            totalHeight -= blockColumns > 1 ? blockVGap : 0;
-
-            //
-            updateAnimationViewer();
-
-            // Repaint
-            repaint();
-        }
-    }
-
     /*
      *  Quick method to copy across similar classes to ensure that the graphic is up to date -- Keeps init cleaner
      */
-    private void performGraphicCheck() {
+    private void setupGrapic() {
 
         //
         if (illustration == null) {
@@ -481,6 +518,7 @@ public class IllustrationEditor extends javax.swing.JDialog {
             }
         }
     }
+    // </editor-fold>
 
     private void performComponentSync(JFormattedTextField field, JSpinner spinner) {
 
@@ -509,7 +547,7 @@ public class IllustrationEditor extends javax.swing.JDialog {
         spinner.setValue((int) value);
 
         // Refresh
-        refresh();
+        updateAnimationViewer();
     }
 
     /**
@@ -586,10 +624,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         monet.dispose();
     }
 
-    private SpinnerNumberModel getSpinnerModelInstance() {
-        return new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1);
-    }
-
     private void autoComplete(Image image) {
 
         //
@@ -616,72 +650,7 @@ public class IllustrationEditor extends javax.swing.JDialog {
         generateJButton.doClick();
 
         //
-        refresh();
-    }
-
-    private void swapCheckboxLimits(boolean lock) {
-
-        // Lock those maximums
-        if (lock) {
-
-            // Set maximums First
-            ((SpinnerNumberModel) blockRowJSpinner.getModel()).setMaximum((illustration.getBlockRows() <= 0) ? Short.MAX_VALUE : illustration.getBlockRows());
-            ((SpinnerNumberModel) blockColumnJSpinner.getModel()).setMaximum((illustration.getBlockColumns() <= 0) ? Short.MAX_VALUE : illustration.getBlockColumns());
-            ((SpinnerNumberModel) blockXOffsetJSpinner.getModel()).setMaximum((illustration.getBlockXOffset() <= 0) ? Short.MAX_VALUE : illustration.getBlockXOffset());
-            ((SpinnerNumberModel) blockYOffsetJSpinner.getModel()).setMaximum((illustration.getBlockYOffset() <= 0) ? Short.MAX_VALUE : illustration.getBlockYOffset());
-            ((SpinnerNumberModel) blockVGapJSpinner.getModel()).setMaximum((illustration.getBlockVGap() <= 0) ? Short.MAX_VALUE : illustration.getBlockVGap());
-            ((SpinnerNumberModel) blockHGapJSpinner.getModel()).setMaximum((illustration.getBlockHGap() <= 0) ? Short.MAX_VALUE : illustration.getBlockHGap());
-            ((SpinnerNumberModel) blockWidthJSpinner.getModel()).setMaximum((illustration.getBlockWidth() <= 0) ? Short.MAX_VALUE : illustration.getBlockWidth());
-            ((SpinnerNumberModel) blockHeightJSpinner.getModel()).setMaximum((illustration.getBlockHeight() <= 0) ? Short.MAX_VALUE : illustration.getBlockHeight());
-        } else {
-
-            // Release the maximums to Short.max_value
-            ((SpinnerNumberModel) blockRowJSpinner.getModel()).setMaximum(Short.MAX_VALUE);
-            ((SpinnerNumberModel) blockColumnJSpinner.getModel()).setMaximum(Short.MAX_VALUE);
-            ((SpinnerNumberModel) blockXOffsetJSpinner.getModel()).setMaximum(Short.MAX_VALUE);
-            ((SpinnerNumberModel) blockYOffsetJSpinner.getModel()).setMaximum(Short.MAX_VALUE);
-            ((SpinnerNumberModel) blockVGapJSpinner.getModel()).setMaximum(Short.MAX_VALUE);
-            ((SpinnerNumberModel) blockHGapJSpinner.getModel()).setMaximum(Short.MAX_VALUE);
-            ((SpinnerNumberModel) blockWidthJSpinner.getModel()).setMaximum(Short.MAX_VALUE);
-            ((SpinnerNumberModel) blockHeightJSpinner.getModel()).setMaximum(Short.MAX_VALUE);
-        }
-    }
-
-    private void updateStretchBox() {
-
-        //
-        final Backdrop backdrop = (Backdrop) illustration;
-
-        //
-        final boolean bool = stretchJCheckBox.isSelected();
-
-        // Set it in the backdrop
-        backdrop.setStretching(bool);
-
-        // The backdrop is set to stretch to bounds
-        if (bool == true) {
-
-            // When true disable the row and col fields and spinners
-            blockRowJSpinner.setEnabled(false);
-            blockRowJField.setEnabled(false);
-            blockColumnJSpinner.setEnabled(false);
-            blockColumnJField.setEnabled(false);
-        } else {
-
-            //
-            blockRowJSpinner.setEnabled(true);
-            blockColumnJSpinner.setEnabled(true);
-            blockColumnJField.setEnabled(true);
-            blockRowJField.setEnabled(true);
-        }
-
-        //
-        swapCheckboxLimits(bool);
-        System.err.println("USB :" + ((SpinnerNumberModel) blockRowJSpinner.getModel()).getMaximum());
-    }
-
-    public AnimationViewer getAnimationViewer() {
-        return viewer;
+        updateAnimationViewer();
     }
 
     /**
@@ -701,7 +670,7 @@ public class IllustrationEditor extends javax.swing.JDialog {
         filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
         autoCompleteJButton = new javax.swing.JButton();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
-        finishJButton = new javax.swing.JButton();
+        commitJButton = new javax.swing.JButton();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
         cancelJButton = new javax.swing.JButton();
         mainJTabbedPane = new javax.swing.JTabbedPane();
@@ -732,7 +701,20 @@ public class IllustrationEditor extends javax.swing.JDialog {
         blockHGapJSpinner = new javax.swing.JSpinner();
         blockRowJLabel = new javax.swing.JLabel();
         nullJLabel1 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
+        backgroundRenderJPanel = new javax.swing.JPanel();
+        animationRenderJPanel = new javax.swing.JPanel();
+        delayJLabel = new javax.swing.JLabel();
+        nullJLabel3 = new javax.swing.JLabel();
+        nullJLabel4 = new javax.swing.JLabel();
+        nullJLabel5 = new javax.swing.JLabel();
+        delayJSpinner = new javax.swing.JSpinner();
+        nullJLabel2 = new javax.swing.JLabel();
+        nullJLabel6 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        nullJLabel7 = new javax.swing.JLabel();
+        nullJLabel8 = new javax.swing.JLabel();
+        stretchJCheckBox = new javax.swing.JCheckBox();
+        manifestJPanel = new javax.swing.JPanel();
         settingJPanel = new javax.swing.JPanel();
         locationJField = new javax.swing.JTextField();
         locationJLabel = new javax.swing.JLabel();
@@ -751,21 +733,10 @@ public class IllustrationEditor extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         generateJButton = new javax.swing.JButton();
         imageJButton = new javax.swing.JButton();
-        backgroundRenderJPanel = new javax.swing.JPanel();
-        animationRenderJPanel = new javax.swing.JPanel();
-        delayJLabel = new javax.swing.JLabel();
-        nullJLabel3 = new javax.swing.JLabel();
-        nullJLabel4 = new javax.swing.JLabel();
-        nullJLabel5 = new javax.swing.JLabel();
-        delayJSpinner = new javax.swing.JSpinner();
-        nullJLabel2 = new javax.swing.JLabel();
-        nullJLabel6 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        nullJLabel7 = new javax.swing.JLabel();
-        nullJLabel8 = new javax.swing.JLabel();
-        stretchJCheckBox = new javax.swing.JCheckBox();
         imageJScrollPane = new javax.swing.JScrollPane();
-        titleJLabel = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+        lockJButton = new javax.swing.JToggleButton();
 
         delayJField.setText("1000");
         delayJField.setEnabled(false);
@@ -813,16 +784,16 @@ public class IllustrationEditor extends javax.swing.JDialog {
         buttonJPanel.add(autoCompleteJButton);
         buttonJPanel.add(filler3);
 
-        finishJButton.setText("Finish");
-        finishJButton.setMaximumSize(new java.awt.Dimension(88, 26));
-        finishJButton.setMinimumSize(new java.awt.Dimension(88, 26));
-        finishJButton.setPreferredSize(new java.awt.Dimension(88, 26));
-        finishJButton.addActionListener(new java.awt.event.ActionListener() {
+        commitJButton.setText("Commit");
+        commitJButton.setMaximumSize(new java.awt.Dimension(88, 26));
+        commitJButton.setMinimumSize(new java.awt.Dimension(88, 26));
+        commitJButton.setPreferredSize(new java.awt.Dimension(88, 26));
+        commitJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                finishJButtonActionPerformed(evt);
+                commitJButtonActionPerformed(evt);
             }
         });
-        buttonJPanel.add(finishJButton);
+        buttonJPanel.add(commitJButton);
         buttonJPanel.add(filler2);
 
         cancelJButton.setText("Cancel");
@@ -850,7 +821,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         jPanel3Layout.rowHeights = new int[] {0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0};
         sliceJPanel.setLayout(jPanel3Layout);
 
-        blockYOffsetJLabel.setForeground(new java.awt.Color(51, 51, 51));
         blockYOffsetJLabel.setText("Block Y-Offset:");
         blockYOffsetJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         blockYOffsetJLabel.setMaximumSize(new java.awt.Dimension(88, 22));
@@ -896,7 +866,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sliceJPanel.add(blockYOffsetJSpinner, gridBagConstraints);
 
-        blockWidthJLabel.setForeground(new java.awt.Color(51, 51, 51));
         blockWidthJLabel.setText("Block Width:");
         blockWidthJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         blockWidthJLabel.setMaximumSize(new java.awt.Dimension(88, 22));
@@ -942,7 +911,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sliceJPanel.add(blockWidthJSpinner, gridBagConstraints);
 
-        blockHeightJLabel.setForeground(new java.awt.Color(51, 51, 51));
         blockHeightJLabel.setText("Block Height:");
         blockHeightJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         blockHeightJLabel.setMaximumSize(new java.awt.Dimension(88, 22));
@@ -988,7 +956,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sliceJPanel.add(blockHeightJSpinner, gridBagConstraints);
 
-        blockXOffsetJLabel.setForeground(new java.awt.Color(51, 51, 51));
         blockXOffsetJLabel.setText("Block X-Offset:");
         blockXOffsetJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         blockXOffsetJLabel.setMaximumSize(new java.awt.Dimension(88, 22));
@@ -1034,7 +1001,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sliceJPanel.add(blockXOffsetJSpinner, gridBagConstraints);
 
-        blockColumnJLabel.setForeground(new java.awt.Color(51, 51, 51));
         blockColumnJLabel.setText("Block Columns:");
         blockColumnJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         blockColumnJLabel.setMaximumSize(new java.awt.Dimension(88, 22));
@@ -1047,7 +1013,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sliceJPanel.add(blockColumnJLabel, gridBagConstraints);
 
-        blockVGapJLabel.setForeground(new java.awt.Color(51, 51, 51));
         blockVGapJLabel.setText("Block V-Gap:");
         blockVGapJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         blockVGapJLabel.setMaximumSize(new java.awt.Dimension(88, 22));
@@ -1060,7 +1025,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sliceJPanel.add(blockVGapJLabel, gridBagConstraints);
 
-        blockHGapJLabel.setForeground(new java.awt.Color(51, 51, 51));
         blockHGapJLabel.setText("Block H-Gap:");
         blockHGapJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         blockHGapJLabel.setMaximumSize(new java.awt.Dimension(88, 22));
@@ -1205,7 +1169,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sliceJPanel.add(blockHGapJSpinner, gridBagConstraints);
 
-        blockRowJLabel.setForeground(new java.awt.Color(51, 51, 51));
         blockRowJLabel.setText("Block Rows:");
         blockRowJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
         blockRowJLabel.setMaximumSize(new java.awt.Dimension(88, 22));
@@ -1219,7 +1182,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
         sliceJPanel.add(blockRowJLabel, gridBagConstraints);
 
         nullJLabel1.setText("Change how the Image will be Sliced Up");
-        nullJLabel1.setEnabled(false);
 
         javax.swing.GroupLayout sliceTabJPanelLayout = new javax.swing.GroupLayout(sliceTabJPanel);
         sliceTabJPanel.setLayout(sliceTabJPanelLayout);
@@ -1244,248 +1206,16 @@ public class IllustrationEditor extends javax.swing.JDialog {
 
         mainJTabbedPane.addTab("Slice Settings", sliceTabJPanel);
 
-        settingJPanel.setMaximumSize(new java.awt.Dimension(247, 184));
-        settingJPanel.setMinimumSize(new java.awt.Dimension(247, 184));
-        settingJPanel.setPreferredSize(new java.awt.Dimension(247, 184));
-        java.awt.GridBagLayout settingJPanelLayout = new java.awt.GridBagLayout();
-        settingJPanelLayout.columnWidths = new int[] {0, 5, 0};
-        settingJPanelLayout.rowHeights = new int[] {0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0};
-        settingJPanel.setLayout(settingJPanelLayout);
-
-        locationJField.setColumns(20);
-        locationJField.setEnabled(false);
-        locationJField.setMaximumSize(new java.awt.Dimension(134, 22));
-        locationJField.setMinimumSize(new java.awt.Dimension(134, 22));
-        locationJField.setPreferredSize(new java.awt.Dimension(134, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        settingJPanel.add(locationJField, gridBagConstraints);
-
-        locationJLabel.setForeground(new java.awt.Color(51, 51, 51));
-        locationJLabel.setText("Image Location:");
-        locationJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        locationJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
-        locationJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
-        locationJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        settingJPanel.add(locationJLabel, gridBagConstraints);
-
-        packageJLabel.setForeground(new java.awt.Color(51, 51, 51));
-        packageJLabel.setText("Image Package:");
-        packageJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
-        packageJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
-        packageJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        settingJPanel.add(packageJLabel, gridBagConstraints);
-
-        packageJField.setColumns(20);
-        packageJField.setEnabled(false);
-        packageJField.setMaximumSize(new java.awt.Dimension(134, 22));
-        packageJField.setMinimumSize(new java.awt.Dimension(134, 22));
-        packageJField.setPreferredSize(new java.awt.Dimension(134, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        settingJPanel.add(packageJField, gridBagConstraints);
-
-        widthJLabel.setForeground(new java.awt.Color(51, 51, 51));
-        widthJLabel.setText("Image Width :");
-        widthJLabel.setEnabled(false);
-        widthJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
-        widthJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
-        widthJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        settingJPanel.add(widthJLabel, gridBagConstraints);
-
-        heightJLabel.setForeground(new java.awt.Color(51, 51, 51));
-        heightJLabel.setText("Image Height:");
-        heightJLabel.setEnabled(false);
-        heightJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
-        heightJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
-        heightJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        settingJPanel.add(heightJLabel, gridBagConstraints);
-
-        referenceJLabel.setForeground(new java.awt.Color(51, 51, 51));
-        referenceJLabel.setText("Reference ID:");
-        referenceJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
-        referenceJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
-        referenceJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        settingJPanel.add(referenceJLabel, gridBagConstraints);
-
-        nameJLabel.setForeground(new java.awt.Color(51, 51, 51));
-        nameJLabel.setText("Reference Name:");
-        nameJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
-        nameJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
-        nameJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
-        settingJPanel.add(nameJLabel, gridBagConstraints);
-
-        referenceJField.setColumns(20);
-        referenceJField.setToolTipText("");
-        referenceJField.setMaximumSize(new java.awt.Dimension(134, 22));
-        referenceJField.setMinimumSize(new java.awt.Dimension(134, 22));
-        referenceJField.setPreferredSize(new java.awt.Dimension(134, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        settingJPanel.add(referenceJField, gridBagConstraints);
-
-        nameJField.setColumns(20);
-        nameJField.setMaximumSize(new java.awt.Dimension(134, 22));
-        nameJField.setMinimumSize(new java.awt.Dimension(134, 22));
-        nameJField.setPreferredSize(new java.awt.Dimension(134, 22));
-        nameJField.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                nameJFieldComponentResized(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        settingJPanel.add(nameJField, gridBagConstraints);
-
-        displayJField.setColumns(20);
-        displayJField.setMaximumSize(new java.awt.Dimension(134, 22));
-        displayJField.setMinimumSize(new java.awt.Dimension(134, 22));
-        displayJField.setPreferredSize(new java.awt.Dimension(134, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        settingJPanel.add(displayJField, gridBagConstraints);
-
-        displayJLabel.setForeground(new java.awt.Color(51, 51, 51));
-        displayJLabel.setText("Display Name:");
-        displayJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
-        displayJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
-        displayJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        settingJPanel.add(displayJLabel, gridBagConstraints);
-
-        widthJField.setEditable(false);
-        widthJField.setColumns(20);
-        widthJField.setMaximumSize(new java.awt.Dimension(134, 22));
-        widthJField.setMinimumSize(new java.awt.Dimension(134, 22));
-        widthJField.setPreferredSize(new java.awt.Dimension(134, 22));
-        widthJField.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                widthJFieldMouseClicked(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        settingJPanel.add(widthJField, gridBagConstraints);
-
-        heightJField.setEditable(false);
-        heightJField.setColumns(20);
-        heightJField.setMaximumSize(new java.awt.Dimension(134, 22));
-        heightJField.setMinimumSize(new java.awt.Dimension(134, 22));
-        heightJField.setPreferredSize(new java.awt.Dimension(134, 22));
-        heightJField.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                heightJFieldMouseClicked(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        settingJPanel.add(heightJField, gridBagConstraints);
-
-        jLabel2.setText("Edit Information about this Resource");
-        jLabel2.setEnabled(false);
-
-        generateJButton.setText("Generate ID's");
-        generateJButton.setMaximumSize(new java.awt.Dimension(104, 26));
-        generateJButton.setMinimumSize(new java.awt.Dimension(104, 26));
-        generateJButton.setPreferredSize(new java.awt.Dimension(104, 26));
-        generateJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                generateJButtonActionPerformed(evt);
-            }
-        });
-
-        imageJButton.setLabel("Change Image");
-        imageJButton.setMaximumSize(new java.awt.Dimension(134, 26));
-        imageJButton.setMinimumSize(new java.awt.Dimension(134, 26));
-        imageJButton.setPreferredSize(new java.awt.Dimension(134, 26));
-        imageJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                imageJButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(generateJButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(imageJButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(settingJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(settingJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(generateJButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(imageJButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-
-        mainJTabbedPane.addTab("Manifest Settings", jPanel1);
-
         delayJLabel.setForeground(new java.awt.Color(51, 51, 51));
         delayJLabel.setText("Timer Delay (ms):");
         delayJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
         delayJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
         delayJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
 
-        nullJLabel3.setForeground(new java.awt.Color(51, 51, 51));
         nullJLabel3.setText("Sets just how long the engine should wait");
 
-        nullJLabel4.setForeground(new java.awt.Color(51, 51, 51));
         nullJLabel4.setText("(in Miliseconds) before changing to the next image");
 
-        nullJLabel5.setForeground(new java.awt.Color(51, 51, 51));
         nullJLabel5.setText("in the Animation queue");
 
         delayJSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -1528,10 +1258,8 @@ public class IllustrationEditor extends javax.swing.JDialog {
         nullJLabel6.setText("Background Settings");
         nullJLabel6.setEnabled(false);
 
-        nullJLabel7.setForeground(new java.awt.Color(51, 51, 51));
         nullJLabel7.setText("Sets whether or not the background should stretch");
 
-        nullJLabel8.setForeground(new java.awt.Color(51, 51, 51));
         nullJLabel8.setText("width and length-wise to the boundry of the room");
 
         stretchJCheckBox.setForeground(new java.awt.Color(51, 51, 51));
@@ -1591,13 +1319,249 @@ public class IllustrationEditor extends javax.swing.JDialog {
 
         mainJTabbedPane.addTab("Render Settings", backgroundRenderJPanel);
 
+        settingJPanel.setMaximumSize(new java.awt.Dimension(247, 184));
+        settingJPanel.setMinimumSize(new java.awt.Dimension(247, 184));
+        settingJPanel.setPreferredSize(new java.awt.Dimension(247, 184));
+        java.awt.GridBagLayout settingJPanelLayout = new java.awt.GridBagLayout();
+        settingJPanelLayout.columnWidths = new int[] {0, 5, 0};
+        settingJPanelLayout.rowHeights = new int[] {0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 0};
+        settingJPanel.setLayout(settingJPanelLayout);
+
+        locationJField.setColumns(20);
+        locationJField.setEnabled(false);
+        locationJField.setMaximumSize(new java.awt.Dimension(134, 22));
+        locationJField.setMinimumSize(new java.awt.Dimension(134, 22));
+        locationJField.setPreferredSize(new java.awt.Dimension(134, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        settingJPanel.add(locationJField, gridBagConstraints);
+
+        locationJLabel.setText("Image Location:");
+        locationJLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        locationJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
+        locationJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
+        locationJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        settingJPanel.add(locationJLabel, gridBagConstraints);
+
+        packageJLabel.setText("Image Package:");
+        packageJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
+        packageJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
+        packageJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        settingJPanel.add(packageJLabel, gridBagConstraints);
+
+        packageJField.setColumns(20);
+        packageJField.setEnabled(false);
+        packageJField.setMaximumSize(new java.awt.Dimension(134, 22));
+        packageJField.setMinimumSize(new java.awt.Dimension(134, 22));
+        packageJField.setPreferredSize(new java.awt.Dimension(134, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        settingJPanel.add(packageJField, gridBagConstraints);
+
+        widthJLabel.setText("Image Width :");
+        widthJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
+        widthJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
+        widthJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        settingJPanel.add(widthJLabel, gridBagConstraints);
+
+        heightJLabel.setText("Image Height:");
+        heightJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
+        heightJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
+        heightJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        settingJPanel.add(heightJLabel, gridBagConstraints);
+
+        referenceJLabel.setText("Reference ID:");
+        referenceJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
+        referenceJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
+        referenceJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        settingJPanel.add(referenceJLabel, gridBagConstraints);
+
+        nameJLabel.setText("Reference Name:");
+        nameJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
+        nameJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
+        nameJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 12;
+        settingJPanel.add(nameJLabel, gridBagConstraints);
+
+        referenceJField.setColumns(20);
+        referenceJField.setToolTipText("");
+        referenceJField.setMaximumSize(new java.awt.Dimension(134, 22));
+        referenceJField.setMinimumSize(new java.awt.Dimension(134, 22));
+        referenceJField.setPreferredSize(new java.awt.Dimension(134, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        settingJPanel.add(referenceJField, gridBagConstraints);
+
+        nameJField.setColumns(20);
+        nameJField.setMaximumSize(new java.awt.Dimension(134, 22));
+        nameJField.setMinimumSize(new java.awt.Dimension(134, 22));
+        nameJField.setPreferredSize(new java.awt.Dimension(134, 22));
+        nameJField.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                nameJFieldComponentResized(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        settingJPanel.add(nameJField, gridBagConstraints);
+
+        displayJField.setColumns(20);
+        displayJField.setMaximumSize(new java.awt.Dimension(134, 22));
+        displayJField.setMinimumSize(new java.awt.Dimension(134, 22));
+        displayJField.setPreferredSize(new java.awt.Dimension(134, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        settingJPanel.add(displayJField, gridBagConstraints);
+
+        displayJLabel.setText("Display Name:");
+        displayJLabel.setMaximumSize(new java.awt.Dimension(104, 22));
+        displayJLabel.setMinimumSize(new java.awt.Dimension(104, 22));
+        displayJLabel.setPreferredSize(new java.awt.Dimension(104, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        settingJPanel.add(displayJLabel, gridBagConstraints);
+
+        widthJField.setEditable(false);
+        widthJField.setColumns(20);
+        widthJField.setMaximumSize(new java.awt.Dimension(134, 22));
+        widthJField.setMinimumSize(new java.awt.Dimension(134, 22));
+        widthJField.setPreferredSize(new java.awt.Dimension(134, 22));
+        widthJField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                widthJFieldMouseClicked(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        settingJPanel.add(widthJField, gridBagConstraints);
+
+        heightJField.setEditable(false);
+        heightJField.setColumns(20);
+        heightJField.setMaximumSize(new java.awt.Dimension(134, 22));
+        heightJField.setMinimumSize(new java.awt.Dimension(134, 22));
+        heightJField.setPreferredSize(new java.awt.Dimension(134, 22));
+        heightJField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                heightJFieldMouseClicked(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        settingJPanel.add(heightJField, gridBagConstraints);
+
+        jLabel2.setText("Edit Information about this Resource");
+
+        generateJButton.setText("Generate ID's");
+        generateJButton.setMaximumSize(new java.awt.Dimension(104, 26));
+        generateJButton.setMinimumSize(new java.awt.Dimension(104, 26));
+        generateJButton.setPreferredSize(new java.awt.Dimension(104, 26));
+        generateJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateJButtonActionPerformed(evt);
+            }
+        });
+
+        imageJButton.setLabel("Change Image");
+        imageJButton.setMaximumSize(new java.awt.Dimension(134, 26));
+        imageJButton.setMinimumSize(new java.awt.Dimension(134, 26));
+        imageJButton.setPreferredSize(new java.awt.Dimension(134, 26));
+        imageJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                imageJButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout manifestJPanelLayout = new javax.swing.GroupLayout(manifestJPanel);
+        manifestJPanel.setLayout(manifestJPanelLayout);
+        manifestJPanelLayout.setHorizontalGroup(
+            manifestJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(manifestJPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(manifestJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(manifestJPanelLayout.createSequentialGroup()
+                        .addGroup(manifestJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(manifestJPanelLayout.createSequentialGroup()
+                                .addComponent(generateJButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(imageJButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(settingJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        manifestJPanelLayout.setVerticalGroup(
+            manifestJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, manifestJPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(settingJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(manifestJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(generateJButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(imageJButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        mainJTabbedPane.addTab("Manifest Settings", manifestJPanel);
+
         imageJScrollPane.setToolTipText("");
         imageJScrollPane.setMaximumSize(new java.awt.Dimension(275, 280));
         imageJScrollPane.setMinimumSize(new java.awt.Dimension(275, 280));
         imageJScrollPane.setPreferredSize(new java.awt.Dimension(275, 280));
 
-        titleJLabel.setText("Change and view Illustrations");
-        titleJLabel.setEnabled(false);
+        jPanel3.setMaximumSize(new java.awt.Dimension(32767, 24));
+        jPanel3.setMinimumSize(new java.awt.Dimension(0, 24));
+        jPanel3.setPreferredSize(new java.awt.Dimension(456, 24));
+        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
+        jPanel3.add(filler5);
+
+        lockJButton.setToolTipText("");
+        lockJButton.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        lockJButton.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+        lockJButton.setMargin(new java.awt.Insets(2, 0, 2, 0));
+        lockJButton.setMaximumSize(new java.awt.Dimension(326, 24));
+        lockJButton.setMinimumSize(new java.awt.Dimension(96, 24));
+        lockJButton.setPreferredSize(new java.awt.Dimension(136, 24));
+        lockJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lockJButtonActionPerformed(evt);
+            }
+        });
+        jPanel3.add(lockJButton);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -1606,26 +1570,32 @@ public class IllustrationEditor extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(titleJLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(buttonJPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(mainJTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
-                        .addComponent(imageJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(imageJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addComponent(mainJTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(titleJLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(mainJTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(imageJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                        .addComponent(mainJTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(imageJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(buttonJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -1711,12 +1681,16 @@ public class IllustrationEditor extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_blockYOffsetJSpinnerStateChanged
 
-    private void finishJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_finishJButtonActionPerformed
-        // Apply changes to Tileset
-        finish();
-    }//GEN-LAST:event_finishJButtonActionPerformed
+    private void commitJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commitJButtonActionPerformed
+
+        // Ask first
+        if (box_delegate.isSelected()) {
+            commit();
+        }
+    }//GEN-LAST:event_commitJButtonActionPerformed
 
     private void cancelJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelJButtonActionPerformed
+
         // Set invisible
         setVisible(false);
     }//GEN-LAST:event_cancelJButtonActionPerformed
@@ -1736,12 +1710,14 @@ public class IllustrationEditor extends javax.swing.JDialog {
 
     private void imageJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageJButtonActionPerformed
 
-        // Open the PluginManager
+        // Allow the user to select a resource
         final ResourceSelector manager = new ResourceSelector(this, delegate, true);
         manager.setFilterType(Picture.class);
         manager.setResource(picture);
         manager.setLocationRelativeTo(this);
         manager.setVisible(true);
+
+        // User is finished with the dialog
         manager.dispose();
 
         // It will close on its own
@@ -1753,19 +1729,17 @@ public class IllustrationEditor extends javax.swing.JDialog {
             //
             if (picture != null) {
 
-                //
+                // Give this illustration the picture
                 illustration.setPicture(picture);
 
-                //
+                // Make sure the Image Panel is displaying the new picture
                 imagePanel.updatePanel(illustration);
 
-                // Update and validate everything here
-                //binder.setResource(illustration);
+                // Bind the width and height to the respective JFields
                 binder.bindImage(picture, this);
 
-                //
-                blockRowJField.setValue(1);
-                blockColumnJField.setValue(1);
+                //  blockRowJField.setValue(1);
+                //  blockColumnJField.setValue(1);
 
                 // Quick check for backdrops
                 if (illustration instanceof Backdrop) {
@@ -1782,14 +1756,14 @@ public class IllustrationEditor extends javax.swing.JDialog {
             //
         }
 
-        //
-        refresh();
+        // Refresh everything.
+        updateAnimationViewer();
     }//GEN-LAST:event_imageJButtonActionPerformed
 
     private void generateJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateJButtonActionPerformed
 
         // Just to make sure.
-        if (binder.isEditting() == false) {
+        if (binder.isLocked() == false) {
 
             // Click this button to auto-generate all three forms of manifest-to-delegate identification
             binder.testButton();
@@ -1940,11 +1914,26 @@ public class IllustrationEditor extends javax.swing.JDialog {
         if (viewer != null) {
 
             // TODO add your handling code here:
-            viewer.setLocation((getX() - viewer.getWidth()) - 6, getY() + 32);
+            viewer.setLocation((getX() - viewer.getWidth()) - 10, getY() + 32);
             viewer.setVisible(true);
             viewer.requestFocus();
         }
     }//GEN-LAST:event_formWindowOpened
+
+    private void lockJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lockJButtonActionPerformed
+
+        //
+        final boolean bool = lockJButton.isSelected();
+
+        // Change to opposite icon
+        lockJButton.setIcon(bool ? iconLock : iconUnlock);
+        lockJButton.setText(bool ? "Permission Locked" : "Permission Unlocked");
+        lockJButton.setToolTipText(bool ? "Click to Unlock Change Permissions" : "Click to Lock Change Permissions");
+        binder.lock(bool);
+
+        //
+        activateControls(!bool);
+    }//GEN-LAST:event_lockJButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel animationRenderJPanel;
     private javax.swing.JButton autoCompleteJButton;
@@ -1976,6 +1965,7 @@ public class IllustrationEditor extends javax.swing.JDialog {
     private javax.swing.JPanel buttonJPanel;
     private javax.swing.JButton cancelJButton;
     private javax.swing.JButton colorJButton;
+    private javax.swing.JButton commitJButton;
     private javax.swing.JFormattedTextField delayJField;
     private javax.swing.JLabel delayJLabel;
     private javax.swing.JSpinner delayJSpinner;
@@ -1985,18 +1975,20 @@ public class IllustrationEditor extends javax.swing.JDialog {
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
     private javax.swing.Box.Filler filler4;
-    private javax.swing.JButton finishJButton;
+    private javax.swing.Box.Filler filler5;
     private javax.swing.JButton generateJButton;
     private javax.swing.JTextField heightJField;
     private javax.swing.JLabel heightJLabel;
     private javax.swing.JButton imageJButton;
     private javax.swing.JScrollPane imageJScrollPane;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JTextField locationJField;
     private javax.swing.JLabel locationJLabel;
+    private javax.swing.JToggleButton lockJButton;
     private javax.swing.JTabbedPane mainJTabbedPane;
+    private javax.swing.JPanel manifestJPanel;
     private javax.swing.JTextField nameJField;
     private javax.swing.JLabel nameJLabel;
     private javax.swing.JLabel nullJLabel1;
@@ -2015,7 +2007,6 @@ public class IllustrationEditor extends javax.swing.JDialog {
     private javax.swing.JPanel sliceJPanel;
     private javax.swing.JPanel sliceTabJPanel;
     private javax.swing.JCheckBox stretchJCheckBox;
-    private javax.swing.JLabel titleJLabel;
     private javax.swing.JTextField widthJField;
     private javax.swing.JLabel widthJLabel;
     // End of variables declaration//GEN-END:variables

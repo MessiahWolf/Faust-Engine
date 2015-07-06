@@ -76,7 +76,7 @@
             <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalGlue"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JButton" name="finishJButton">
+        <Component class="javax.swing.JButton" name="button_finish">
           <Properties>
             <Property name="text" type="java.lang.String" value="Finish"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -90,7 +90,7 @@
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="finishJButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="button_finishActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.Box$Filler" name="filler2">
@@ -188,7 +188,6 @@
                 <Component class="javax.swing.JLabel" name="pluginJLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Part of Package:"/>
-                    <Property name="enabled" type="boolean" value="false"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[104, 22]"/>
                     </Property>
@@ -207,6 +206,7 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="field_plugin">
                   <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
                     <Property name="columns" type="int" value="20"/>
                     <Property name="enabled" type="boolean" value="false"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -231,7 +231,6 @@
                       <Color blue="33" green="33" red="33" type="rgb"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Canvas Width:"/>
-                    <Property name="enabled" type="boolean" value="false"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[104, 22]"/>
                     </Property>
@@ -254,7 +253,6 @@
                       <Color blue="33" green="33" red="33" type="rgb"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Canvas Height:"/>
-                    <Property name="enabled" type="boolean" value="false"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[104, 22]"/>
                     </Property>
@@ -400,7 +398,6 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="field_width">
                   <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
                     <Property name="columns" type="int" value="20"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[134, 22]"/>
@@ -420,7 +417,6 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="field_height">
                   <Properties>
-                    <Property name="editable" type="boolean" value="false"/>
                     <Property name="columns" type="int" value="20"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[134, 22]"/>

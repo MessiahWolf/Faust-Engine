@@ -578,9 +578,6 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
                 if (eventButton == MouseEvent.BUTTON1) {
 
                     //
-                    delegate.printRequestMap();
-
-                    //
                     if (clickCount == 2) {
 
                         // Show the editor

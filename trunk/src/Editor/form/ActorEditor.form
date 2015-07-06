@@ -149,18 +149,15 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="titleJLabel" max="32767" attributes="0"/>
+                  <Component id="buttonJPanel" alignment="0" min="-2" pref="546" max="-2" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="buttonJPanel" pref="0" max="32767" attributes="0"/>
-                          <Group type="102" attributes="0">
-                              <Component id="renderJScrollPane" pref="258" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                              <Component id="mainTabbedPane" min="-2" pref="276" max="-2" attributes="0"/>
-                          </Group>
+                      <Component id="renderJScrollPane" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jPanel1" alignment="1" min="-2" pref="276" max="-2" attributes="0"/>
+                          <Component id="mainTabbedPane" alignment="1" min="-2" pref="276" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -170,13 +167,15 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="titleJLabel" min="-2" max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="32767" attributes="0"/>
+                      <Component id="mainTabbedPane" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <Component id="renderJScrollPane" max="32767" attributes="0"/>
-                  <Component id="mainTabbedPane" max="32767" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="buttonJPanel" min="-2" max="-2" attributes="0"/>
@@ -226,9 +225,10 @@
             <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalGlue"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JButton" name="finishJButton">
+        <Component class="javax.swing.JButton" name="commitJButton">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Finish"/>
+            <Property name="text" type="java.lang.String" value="Commit"/>
+            <Property name="toolTipText" type="java.lang.String" value="Finalize Changes"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[88, 26]"/>
             </Property>
@@ -240,7 +240,7 @@
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="finishJButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="commitJButtonActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.Box$Filler" name="filler3">
@@ -262,6 +262,7 @@
         <Component class="javax.swing.JButton" name="cancelJButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Cancel"/>
+            <Property name="toolTipText" type="java.lang.String" value="Close this Dialog"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[88, 26]"/>
             </Property>
@@ -430,7 +431,7 @@
                     <EtchetBorder/>
                   </Border>
                 </Property>
-                <Property name="enabled" type="boolean" value="false"/>
+                <Property name="iconTextGap" type="int" value="8"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[240, 24]"/>
                 </Property>
@@ -545,7 +546,6 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Add to Drop List:"/>
                     <Property name="toolTipText" type="java.lang.String" value="The list of Items that this actor drops upon death and the chance to drop each item"/>
-                    <Property name="enabled" type="boolean" value="false"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[88, 22]"/>
                     </Property>
@@ -673,9 +673,6 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="locationJLabel">
                   <Properties>
-                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="33" green="33" red="33" type="rgb"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="Image Location:"/>
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -696,9 +693,6 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="packageJLabel">
                   <Properties>
-                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="33" green="33" red="33" type="rgb"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="Image Package:"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[104, 22]"/>
@@ -738,11 +732,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="widthJLabel">
                   <Properties>
-                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="33" green="33" red="33" type="rgb"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="Image Width :"/>
-                    <Property name="enabled" type="boolean" value="false"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[104, 22]"/>
                     </Property>
@@ -761,11 +751,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="heightJLabel">
                   <Properties>
-                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="33" green="33" red="33" type="rgb"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="Image Height:"/>
-                    <Property name="enabled" type="boolean" value="false"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[104, 22]"/>
                     </Property>
@@ -784,9 +770,6 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="referenceJLabel">
                   <Properties>
-                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="33" green="33" red="33" type="rgb"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="Reference ID:"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[104, 22]"/>
@@ -806,9 +789,6 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="nameJLabel">
                   <Properties>
-                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="33" green="33" red="33" type="rgb"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="Reference Name:"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[104, 22]"/>
@@ -889,9 +869,6 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="displayJLabel">
                   <Properties>
-                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="33" green="33" red="33" type="rgb"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="Display Name:"/>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[104, 22]"/>
@@ -1833,18 +1810,60 @@
             <Component class="javax.swing.JLabel" name="jLabel2">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Edit Information about this Resource"/>
-                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </Component>
           </SubComponents>
         </Container>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="titleJLabel">
+    <Container class="javax.swing.JPanel" name="jPanel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Change and view Actors in the World"/>
-        <Property name="enabled" type="boolean" value="false"/>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[32767, 24]"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[0, 24]"/>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[456, 24]"/>
+        </Property>
       </Properties>
-    </Component>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.Box$Filler" name="filler1">
+          <Properties>
+            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[32767, 0]"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalGlue"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JToggleButton" name="lockJButton">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value=""/>
+            <Property name="horizontalAlignment" type="int" value="11"/>
+            <Property name="horizontalTextPosition" type="int" value="10"/>
+            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+              <Insets value="[2, 0, 2, 0]"/>
+            </Property>
+            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[326, 24]"/>
+            </Property>
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[96, 24]"/>
+            </Property>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[136, 24]"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="lockJButtonActionPerformed"/>
+          </Events>
+        </Component>
+      </SubComponents>
+    </Container>
   </SubComponents>
 </Form>

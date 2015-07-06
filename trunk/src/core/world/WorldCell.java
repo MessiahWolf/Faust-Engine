@@ -320,7 +320,6 @@ public class WorldCell implements WorldResource, LayerListener, ZoneListener {
 
                 // Must exist
                 if (current != null) {
-                    System.err.println("Drawing the backdrop");
                     monet.drawImage(current.draw(obs, 1.0f), 0, 0, obs);
                 }
             }
@@ -653,8 +652,6 @@ public class WorldCell implements WorldResource, LayerListener, ZoneListener {
     @Override
     public void shadow(String referenceID, ResourceRequest request) {
 
-        System.out.println("World Cell shadowing request: " + request.getEditorId());
-
         // FMap only recieves layers, backgrounds, and a single FWorld
         requests.put(referenceID, request);
     }
@@ -665,14 +662,10 @@ public class WorldCell implements WorldResource, LayerListener, ZoneListener {
         // The class of the resource
         final Class closs = resource.getClass();
 
-        System.err.println("World Cell recieved something");
-
         // Map does not recieve resources for now...
         if (requests.containsKey(referenceID)) {
 
             if (closs == World.class) {
-
-                System.err.println("World Instance recieved.");
 
                 // Just take it
                 world = (World) resource;

@@ -25,11 +25,8 @@ import core.event.WorldObjectEvent;
 import core.world.Actor;
 import core.world.WorldItem;
 import io.resource.ResourceDelegate;
-import io.resource.DataPackage;
-import core.world.WorldScript;
 import io.resource.ResourceReader;
 import io.resource.ResourceWriter;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.FontMetrics;
@@ -74,6 +71,8 @@ import javax.swing.table.TableModel;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import Editor.listener.ManifestBinder;
+import java.awt.Insets;
+import javax.swing.JToggleButton;
 
 /**
  *
@@ -91,17 +90,17 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
     // Java Classes
     private HashMap<String, Object> editedStatMap;
     private HashMap<WorldItem, Double> editedDropMap;
-    private Image image_animation;
+    private Image imageMissingAnimation;
+    private Image imageDialog;
+    private ImageIcon iconLock;
+    private ImageIcon iconUnlock;
     // Project Classes
-    private DataPackage dataPackage;
     private DelegateCheckBox box_delegate;
     private Actor resource;
     private FaustEditor editor;
     private ManifestBinder binder;
     private ResourceDelegate delegate;
-    private WorldScript script;
     // Data Types
-    private boolean edit;
     private int attackDamageDefault;
     private int attackDefenseDefault;
     //
@@ -132,31 +131,12 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
 
     private void init() {
 
-        // Inst. Arrays
-        editedDropMap = new HashMap<>();
-
         // Create Actor if Null Actor supplied
         if (resource == null) {
             resource = new Actor();
-
-            // We are not editting an existing resource
-            edit = false;
-        } else {
-
-            //
-            script = resource.getScript();
-
-            // We are in fact editting an existing resource
-            edit = true;
         }
 
-        //
-        setupDefaultValues();
-
-        // Attribute hashmap copy
-        editedStatMap = new HashMap<>();
-        editedStatMap.putAll(resource.getAttributeMap());
-
+        // Create the ImagePanel
         imageJPanel = new JPanel() {
             @Override
             public void paintComponent(Graphics monet) {
@@ -168,6 +148,216 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
                 imageJPanelPaint(monet);
             }
         };
+
+        //
+        renderJScrollPane.setViewportView(imageJPanel);
+
+        // Inst. Arrays
+        editedDropMap = new HashMap<>();
+
+        // Attribute hashmap copy
+        editedStatMap = new HashMap<>();
+        editedStatMap.putAll(resource.getAttributeMap());
+
+        //
+        setupDefaultValues();
+
+        //
+        setupManifestBinder();
+
+        //
+        setupTables();
+
+        //
+        setupAttributePanel();
+    }
+
+    private void commit() {
+
+        // Apply attribute changes
+        resource.setAttributeMap(editedStatMap);
+
+        // Resource Delegate information
+        resource.setReferenceName(binder.getReferenceName());
+        resource.setReferenceID(binder.getReferenceID());
+        resource.setDisplayName(binder.getDisplayName());
+
+        // Actor stats
+        resource.setAttackDamage(attackDamageChanged);
+        resource.setAttackDefense(attackDefenseChanged);
+
+        // Build a new Drop Hash Map from Table Contents and apply drop list change
+        resource.setDropList(editedDropMap);
+
+        // Final resource call before Validate
+        resource.updateAttributes();
+
+        // Make sure the resource is up to date before writing it out to file.
+        resource.validate();
+
+        // Actually write it out to file
+        ResourceWriter.write(delegate, resource);
+
+        // Add to delegate so other dialogs have the updates. PackageQueue will add file to .zip if it needs to be there.
+        delegate.addResource(resource);
+
+        //
+        JOptionPane.showMessageDialog(this, "Commit Successful");
+    }
+
+    // <editor-fold desc="Editor Fold: Setup Methods" defaultstate="collapsed">
+    private void setupAttributePanel() {
+
+        //
+        final Class closs = getClass();
+        final Toolkit kit = Toolkit.getDefaultToolkit();
+        final Dimension dimension = new Dimension(32, 32);
+
+        //
+        final ImageIcon attackDamageIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skills/icon-attackdamage.png");
+        final ImageIcon attackDamage16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skills/icon-attackdamage16.png");
+        final ImageIcon attackDefenseIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skills/icon-attackdefense.png");
+        final ImageIcon attackDefense16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skills/icon-attackdefense16.png");
+        final ImageIcon magicDamageIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skills/icon-magicdamage.png");
+        final ImageIcon magicDamage16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skills/icon-magicdamage16.png");
+        final ImageIcon reset16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-reset16.png");
+
+        //
+        iconLock = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-locked24.png");
+        iconUnlock = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-unlocked24.png");
+
+        // Our custom Action Listener
+        final ActionListener evt = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+
+                // Enable the FormattedJField
+                attributeJLabel.setEnabled(true);
+                valueJField.setEnabled(true);
+
+                final Object source = evt.getSource();
+
+                //
+                sourceButton = (JButton) source;
+
+                //
+                if (sourceButton == attackDamageJButton) {
+
+                    //
+                    attributeJLabel.setText("Base Attack Damage");
+                    attributeJLabel.setIcon(attackDamage16Icon);
+
+                    //
+                    valueJField.setValue(attackDamageChanged);
+                    valueJField.selectAll();
+                    valueJField.requestFocus(true);
+                } else if (sourceButton == attackDefenseJButton) {
+
+                    //
+                    attributeJLabel.setText("Base Attack Defense");
+                    attributeJLabel.setIcon(attackDefense16Icon);
+
+                    //
+                    valueJField.setValue(attackDefenseChanged);
+                    valueJField.requestFocus(true);
+                    valueJField.selectAll();
+                } else if (sourceButton == magicDamageJButton) {
+
+                    //
+                    attributeJLabel.setText("Base Magic Damage");
+                    attributeJLabel.setIcon(magicDamage16Icon);
+
+                    //
+                    valueJField.setValue(magicDamageChanged);
+                    valueJField.selectAll();
+                    valueJField.requestFocus(true);
+                }
+            }
+        };
+
+        //
+        attackDamageJButton = new JButton();
+        attackDamageJButton.setPreferredSize(dimension);
+        attackDamageJButton.setIcon(attackDamageIcon);
+        attackDamageJButton.setToolTipText("Physical Attack Damage");
+        attackDamageJButton.addActionListener(evt);
+
+        //
+        attackDefenseJButton = new JButton();
+        attackDefenseJButton.setPreferredSize(dimension);
+        attackDefenseJButton.setIcon(attackDefenseIcon);
+        attackDefenseJButton.setToolTipText("Physical Attack Defense");
+        attackDefenseJButton.addActionListener(evt);
+
+        //
+        magicDamageJButton = new JButton();
+        magicDamageJButton.setPreferredSize(dimension);
+        magicDamageJButton.setIcon(magicDamageIcon);
+        magicDamageJButton.setToolTipText("Magic Attack Damage");
+        magicDamageJButton.addActionListener(evt);
+
+        // Button Section
+        boolean bool = delegate.exists(resource);
+
+        // If the resource existed before dialog started, lock permission to change
+        lockJButton.setContentAreaFilled(false);
+        lockJButton.setFocusPainted(false);
+        lockJButton.setIcon(bool ? iconLock : iconUnlock);
+        lockJButton.setText(bool ? "Permission Locked" : "Permission Unlocked");
+        lockJButton.setToolTipText(bool ? "Click to Unlock Change Permissions" : "Click to Lock Change Permissions");
+        binder.lock(bool);
+
+        //
+        imageDialog = kit.getImage(closs.getResource("/Editor/stock/stock-dialogedit16.png"));
+        imageMissingAnimation = kit.getImage(closs.getResource("/Editor/stock/stock-animation2.png"));
+
+        //
+        this.setIconImage(imageDialog);
+
+        //
+        resetJButton.setIcon(reset16Icon);
+
+        //
+        attributeJPanel.add(attackDamageJButton);
+        attributeJPanel.add(attackDefenseJButton);
+        attributeJPanel.add(magicDamageJButton);
+    }
+
+    private void setupManifestBinder() {
+
+        //
+        box_delegate = new DelegateCheckBox(delegate);
+        buttonJPanel.add(box_delegate, 0);
+
+        // Testing it out.
+        binder = new ManifestBinder(delegate, resource);
+
+        // Binding stuff manually.
+        binder.bind(ManifestBinder.BOX_DELEGATE, box_delegate);
+        binder.bind(ManifestBinder.BUTTON_FINISH, commitJButton);
+        binder.bind(ManifestBinder.BUTTON_GENERATE, button_generate);
+
+        // Fields
+        binder.bind(ManifestBinder.FIELD_DISPLAY, field_display);
+        binder.bind(ManifestBinder.FIELD_REFERENCE, field_reference);
+        binder.bind(ManifestBinder.FIELD_NAME, field_name);
+        binder.bind(ManifestBinder.FIELD_PLUGIN, field_plugin);
+        binder.bind(ManifestBinder.FIELD_LOCATION, field_location);
+        binder.bind(ManifestBinder.FIELD_WIDTH, field_width);
+        binder.bind(ManifestBinder.FIELD_HEIGHT, field_height);
+
+        // Invoke the wrath of the Manifest Binder. >:[
+        binder.invoke();
+
+        // We are in fact editting an existing resource.
+        binder.setEdit(delegate.exists(resource));
+
+        // Either or method above.
+        //binder.setEdit(delegate.getInstanceCount(resource) >= 1 ? true : false);
+        button_generate.setEnabled(!binder.isEditting());
+    }
+
+    private void setupTables() {
 
         // Custom Models
         final DefaultTableModel itemModel = new DefaultTableModel();
@@ -207,124 +397,6 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         // Custom Table Options for First Table
         attributeJTable.setRowHeight(18);
         attributeJTable.getModel().addTableModelListener(this);
-
-        //
-        setupManifestBinder();
-
-        //
-        setupAttributePanel();
-
-        //
-        renderJScrollPane.setViewportView(imageJPanel);
-
-        final Class closs = getClass();
-        final Toolkit kit = Toolkit.getDefaultToolkit();
-        final Image image = kit.getImage(closs.getResource("/stock/stock-dialogedit16.png"));
-        image_animation = kit.getImage(closs.getResource("/stock/stock-animation2.png"));
-
-        //
-        this.setIconImage(image);
-    }
-
-    private void setupAttributePanel() {
-
-        //
-        final Class closs = getClass();
-        final Dimension dimension = new Dimension(32, 32);
-
-        //
-        final ImageIcon attackDamageIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-attackdamage.png");
-        final ImageIcon attackDamage16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-attackdamage16.png");
-        final ImageIcon attackDefenseIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-attackdefense.png");
-        final ImageIcon attackDefense16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-attackdefense16.png");
-        final ImageIcon magicDamageIcon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-magicdamage.png");
-        final ImageIcon magicDamage16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/skill icons/icon-magicdamage16.png");
-        final ImageIcon reset16Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-reset16.png");
-        final ImageIcon info14Icon = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-info14.png");
-
-        // Our custom Action Listener
-        final ActionListener evt = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-
-                // Enable the FormattedJField
-                attributeJLabel.setEnabled(true);
-                valueJField.setEnabled(true);
-
-                //
-                final String prefix = " Attribute Adjusting: ";
-
-                final Object source = evt.getSource();
-
-                //
-                sourceButton = (JButton) source;
-
-                //
-                if (sourceButton == attackDamageJButton) {
-
-                    //
-                    attributeJLabel.setText(prefix + "Attack Damage (Base)");
-                    attributeJLabel.setIcon(attackDamage16Icon);
-
-                    //
-                    valueJField.setValue(attackDamageChanged);
-                    valueJField.selectAll();
-                    valueJField.requestFocus(true);
-                } else if (sourceButton == attackDefenseJButton) {
-
-                    //
-                    attributeJLabel.setText(prefix + "Attack Defense (Base)");
-                    attributeJLabel.setIcon(attackDefense16Icon);
-
-                    //
-                    valueJField.setValue(attackDefenseChanged);
-                    valueJField.requestFocus(true);
-                    valueJField.selectAll();
-                } else if (sourceButton == magicDamageJButton) {
-
-                    //
-                    attributeJLabel.setText(prefix + " Magic Damage (Base)");
-                    attributeJLabel.setIcon(magicDamage16Icon);
-
-                    //
-                    valueJField.setValue(magicDamageChanged);
-                    valueJField.selectAll();
-                    valueJField.requestFocus(true);
-                }
-            }
-        };
-
-        //
-        attackDamageJButton = new JButton();
-        attackDamageJButton.setPreferredSize(dimension);
-        attackDamageJButton.setIcon(attackDamageIcon);
-        attackDamageJButton.setToolTipText("Physical Attack Damage");
-        attackDamageJButton.addActionListener(evt);
-
-        //
-        attackDefenseJButton = new JButton();
-        attackDefenseJButton.setPreferredSize(dimension);
-        attackDefenseJButton.setIcon(attackDefenseIcon);
-        attackDefenseJButton.setToolTipText("Physical Attack Defense");
-        attackDefenseJButton.addActionListener(evt);
-
-        //
-        magicDamageJButton = new JButton();
-        magicDamageJButton.setPreferredSize(dimension);
-        magicDamageJButton.setIcon(magicDamageIcon);
-        magicDamageJButton.setToolTipText("Magic Attack Damage");
-        magicDamageJButton.addActionListener(evt);
-
-        //
-        titleJLabel.setDisabledIcon(info14Icon);
-
-        //
-        resetJButton.setIcon(reset16Icon);
-
-        //
-        attributeJPanel.add(attackDamageJButton);
-        attributeJPanel.add(attackDefenseJButton);
-        attributeJPanel.add(magicDamageJButton);
     }
 
     private void setupDefaultValues() {
@@ -361,11 +433,12 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
             valueJField.selectAll();
         }
     }
+    // </editor-fold>
 
     private void imageJPanelPaint(Graphics monet) {
 
-        //
-        if (image_animation != null) {
+        // Animation has to exist
+        if (imageMissingAnimation != null) {
 
             //
             int posx, posy, width, height;
@@ -375,9 +448,10 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
 
             //
             final Rectangle2D rect = ((FontMetrics) monet.getFontMetrics()).getStringBounds(string, monet);
+
+            // Actual width and height of the text
             width = (int) rect.getWidth();
             height = (int) rect.getHeight();
-
 
             //
             posx = (imageJPanel.getWidth() / 2) - (width / 2);
@@ -385,46 +459,7 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
 
             //
             //monet.drawImage(image_animation, posx, posy, this);
-            monet.drawString("No Animation Set", posx, posy);
-        }
-    }
-
-    private void finish() {
-
-        // The way to check is far below this
-        if (box_delegate.isSelected()) {
-
-            // Apply attribute changes
-            resource.setAttributeMap(editedStatMap);
-
-            // Grab from JTextFields and apply name change
-            resource.setReferenceName(binder.getReferenceName());
-            resource.setReferenceID(binder.getReferenceID());
-            resource.setDisplayName(binder.getDisplayName());
-
-            //
-            resource.setAttackDamage(attackDamageChanged);
-            resource.setAttackDefense(attackDefenseChanged);
-
-            // Build a new Drop Hash Map from Table Contents and apply drop list change
-            resource.setDropList(editedDropMap);
-
-            // Final resource call before Validate
-            resource.updateAttributes();
-
-            //
-            resource.validate();
-
-            //
-            ResourceWriter.write(delegate, resource);
-
-            // Just add; do not write out to file, because the temporary queue or package queue will handle the writing
-            delegate.addResource(resource);
-
-            //
-            setVisible(false);
-        } else {
-            JOptionPane.showMessageDialog(this, "Please check the information provided for fields marked RED");
+            monet.drawString(string, posx, posy);
         }
     }
 
@@ -451,37 +486,58 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         return null;
     }
 
-    private void setupManifestBinder() {
+    @Override
+    public void tableChanged(TableModelEvent e) {
 
-        //
-        box_delegate = new DelegateCheckBox(delegate);
-        buttonJPanel.add(box_delegate, 0);
+        // Grab the Model of the Changed Table in this case AncestorTable is a given.
+        TableModel model = (TableModel) e.getSource();
 
-        // Testing it out.
-        binder = new ManifestBinder(delegate, resource);
+        // Get the selected Row and Column
+        int selectedRow = e.getFirstRow();
+        int selectedColumn = e.getColumn();
 
-        // Binding stuff manually.
-        binder.bind(ManifestBinder.BOX_DELEGATE, box_delegate);
-        binder.bind(ManifestBinder.BUTTON_GENERATE, button_generate);
+        // Get the Name of the Column Changed for Parse Method
+        String selectedColumnName = model.getColumnName(selectedColumn);
 
-        // Fields
-        binder.bind(ManifestBinder.FIELD_DISPLAY, field_display);
-        binder.bind(ManifestBinder.FIELD_REFERENCE, field_reference);
-        binder.bind(ManifestBinder.FIELD_NAME, field_name);
-        binder.bind(ManifestBinder.FIELD_PLUGIN, field_plugin);
-        binder.bind(ManifestBinder.FIELD_LOCATION, field_location);
-        binder.bind(ManifestBinder.FIELD_WIDTH, field_width);
-        binder.bind(ManifestBinder.FIELD_HEIGHT, field_height);
+        // Get the Value of the Changed Column for Parse Method
+        String selectedColumnValue = String.valueOf(model.getValueAt(selectedRow, selectedColumn));
 
-        // Invoke the wrath of the Manifest Binder. >:[
-        binder.invoke();
+        if (this.attributeJTable.getModel() == model) {
 
-        // We are in fact editting an existing resource.
-        binder.setEdit(edit);
+            // Apply settings to stat map
+            editedStatMap.put(selectedColumnName, selectedColumnValue);
+        } else if (this.itemJTable.getModel() == model) {
 
-        // Either or method above.
-        //binder.setEdit(delegate.getInstanceCount(resource) >= 1 ? true : false);
-        button_generate.setEnabled(!binder.isEditting());
+            //
+            double newChance;
+
+            try {
+
+                // Ask for chance to drop
+                newChance = Double.parseDouble(selectedColumnValue);
+
+                // Reset if out of bounds
+                if (newChance > 100.0 || newChance < 0.0) {
+                    //newChance = 50.0;
+                }
+            } catch (NumberFormatException nfe) {
+                // Reset chance to .5 if you type in illegal chars
+                //newChance = 50.0;
+            }
+
+            // Apply settings to item map
+            //editedDropMap.put(((Item)delegate.getResource(Item.class, selectedColumnName).getValue()), newChance);
+        }
+    }
+
+    @Override
+    public void animationEnd(AnimationEvent event) {
+        imageJPanel.repaint();
+    }
+
+    @Override
+    public void animationStep(AnimationEvent event) {
+        imageJPanel.repaint();
     }
 
     /**
@@ -518,7 +574,7 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         renderJScrollPane = new JScrollPane();
         buttonJPanel = new JPanel();
         filler5 = new Box.Filler(new Dimension(0, 0), new Dimension(0, 0), new Dimension(32767, 0));
-        finishJButton = new JButton();
+        commitJButton = new JButton();
         filler3 = new Box.Filler(new Dimension(8, 0), new Dimension(8, 0), new Dimension(8, 32767));
         cancelJButton = new JButton();
         mainTabbedPane = new JTabbedPane();
@@ -564,7 +620,9 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         button_generate = new JButton();
         imageJButton = new JButton();
         jLabel2 = new JLabel();
-        titleJLabel = new JLabel();
+        jPanel1 = new JPanel();
+        filler1 = new Box.Filler(new Dimension(0, 0), new Dimension(0, 0), new Dimension(32767, 0));
+        lockJButton = new JToggleButton();
 
         scriptJScrollPane.setMaximumSize(new Dimension(246, 184));
         scriptJScrollPane.setMinimumSize(new Dimension(246, 184));
@@ -645,19 +703,21 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         buttonJPanel.setLayout(new BoxLayout(buttonJPanel, BoxLayout.LINE_AXIS));
         buttonJPanel.add(filler5);
 
-        finishJButton.setText("Finish");
-        finishJButton.setMaximumSize(new Dimension(88, 26));
-        finishJButton.setMinimumSize(new Dimension(88, 26));
-        finishJButton.setPreferredSize(new Dimension(88, 26));
-        finishJButton.addActionListener(new ActionListener() {
+        commitJButton.setText("Commit");
+        commitJButton.setToolTipText("Finalize Changes");
+        commitJButton.setMaximumSize(new Dimension(88, 26));
+        commitJButton.setMinimumSize(new Dimension(88, 26));
+        commitJButton.setPreferredSize(new Dimension(88, 26));
+        commitJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                finishJButtonActionPerformed(evt);
+                commitJButtonActionPerformed(evt);
             }
         });
-        buttonJPanel.add(finishJButton);
+        buttonJPanel.add(commitJButton);
         buttonJPanel.add(filler3);
 
         cancelJButton.setText("Cancel");
+        cancelJButton.setToolTipText("Close this Dialog");
         cancelJButton.setMaximumSize(new Dimension(88, 26));
         cancelJButton.setMinimumSize(new Dimension(88, 26));
         cancelJButton.setPreferredSize(new Dimension(88, 26));
@@ -709,7 +769,7 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
 
         attributeJLabel.setText(" No Attribute Selected");
         attributeJLabel.setBorder(BorderFactory.createEtchedBorder());
-        attributeJLabel.setEnabled(false);
+        attributeJLabel.setIconTextGap(8);
         attributeJLabel.setMaximumSize(new Dimension(240, 24));
         attributeJLabel.setMinimumSize(new Dimension(240, 24));
         attributeJLabel.setPreferredSize(new Dimension(240, 24));
@@ -780,7 +840,6 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
 
         itemJLabel.setText("Add to Drop List:");
         itemJLabel.setToolTipText("The list of Items that this actor drops upon death and the chance to drop each item");
-        itemJLabel.setEnabled(false);
         itemJLabel.setMaximumSize(new Dimension(88, 22));
         itemJLabel.setMinimumSize(new Dimension(88, 22));
         itemJLabel.setPreferredSize(new Dimension(88, 22));
@@ -839,7 +898,6 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         gridBagConstraints.gridy = 0;
         settingJPanel.add(field_location, gridBagConstraints);
 
-        locationJLabel.setForeground(new Color(51, 51, 51));
         locationJLabel.setText("Image Location:");
         locationJLabel.setHorizontalTextPosition(SwingConstants.CENTER);
         locationJLabel.setMaximumSize(new Dimension(104, 22));
@@ -850,7 +908,6 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         gridBagConstraints.gridy = 0;
         settingJPanel.add(locationJLabel, gridBagConstraints);
 
-        packageJLabel.setForeground(new Color(51, 51, 51));
         packageJLabel.setText("Image Package:");
         packageJLabel.setMaximumSize(new Dimension(104, 22));
         packageJLabel.setMinimumSize(new Dimension(104, 22));
@@ -870,9 +927,7 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         gridBagConstraints.gridy = 2;
         settingJPanel.add(field_plugin, gridBagConstraints);
 
-        widthJLabel.setForeground(new Color(51, 51, 51));
         widthJLabel.setText("Image Width :");
-        widthJLabel.setEnabled(false);
         widthJLabel.setMaximumSize(new Dimension(104, 22));
         widthJLabel.setMinimumSize(new Dimension(104, 22));
         widthJLabel.setPreferredSize(new Dimension(104, 22));
@@ -881,9 +936,7 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         gridBagConstraints.gridy = 4;
         settingJPanel.add(widthJLabel, gridBagConstraints);
 
-        heightJLabel.setForeground(new Color(51, 51, 51));
         heightJLabel.setText("Image Height:");
-        heightJLabel.setEnabled(false);
         heightJLabel.setMaximumSize(new Dimension(104, 22));
         heightJLabel.setMinimumSize(new Dimension(104, 22));
         heightJLabel.setPreferredSize(new Dimension(104, 22));
@@ -892,7 +945,6 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         gridBagConstraints.gridy = 6;
         settingJPanel.add(heightJLabel, gridBagConstraints);
 
-        referenceJLabel.setForeground(new Color(51, 51, 51));
         referenceJLabel.setText("Reference ID:");
         referenceJLabel.setMaximumSize(new Dimension(104, 22));
         referenceJLabel.setMinimumSize(new Dimension(104, 22));
@@ -902,7 +954,6 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         gridBagConstraints.gridy = 10;
         settingJPanel.add(referenceJLabel, gridBagConstraints);
 
-        nameJLabel.setForeground(new Color(51, 51, 51));
         nameJLabel.setText("Reference Name:");
         nameJLabel.setMaximumSize(new Dimension(104, 22));
         nameJLabel.setMinimumSize(new Dimension(104, 22));
@@ -945,7 +996,6 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         gridBagConstraints.gridy = 8;
         settingJPanel.add(field_display, gridBagConstraints);
 
-        displayJLabel.setForeground(new Color(51, 51, 51));
         displayJLabel.setText("Display Name:");
         displayJLabel.setMaximumSize(new Dimension(104, 22));
         displayJLabel.setMinimumSize(new Dimension(104, 22));
@@ -996,7 +1046,6 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         });
 
         jLabel2.setText("Edit Information about this Resource");
-        jLabel2.setEnabled(false);
 
         GroupLayout editorTabJPanelLayout = new GroupLayout(editorTabJPanel);
         editorTabJPanel.setLayout(editorTabJPanelLayout);
@@ -1032,36 +1081,52 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
 
         mainTabbedPane.addTab("Editor Settings", editorTabJPanel);
 
-        titleJLabel.setText("Change and view Actors in the World");
-        titleJLabel.setEnabled(false);
+        jPanel1.setMaximumSize(new Dimension(32767, 24));
+        jPanel1.setMinimumSize(new Dimension(0, 24));
+        jPanel1.setPreferredSize(new Dimension(456, 24));
+        jPanel1.setLayout(new BoxLayout(jPanel1, BoxLayout.LINE_AXIS));
+        jPanel1.add(filler1);
+
+        lockJButton.setToolTipText("");
+        lockJButton.setHorizontalAlignment(SwingConstants.TRAILING);
+        lockJButton.setHorizontalTextPosition(SwingConstants.LEADING);
+        lockJButton.setMargin(new Insets(2, 0, 2, 0));
+        lockJButton.setMaximumSize(new Dimension(326, 24));
+        lockJButton.setMinimumSize(new Dimension(96, 24));
+        lockJButton.setPreferredSize(new Dimension(136, 24));
+        lockJButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                lockJButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(lockJButton);
 
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                    .addComponent(titleJLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(buttonJPanel, GroupLayout.Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 546, GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                            .addComponent(buttonJPanel, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(renderJScrollPane, GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                                .addGap(12, 12, 12)
-                                .addComponent(mainTabbedPane, GroupLayout.PREFERRED_SIZE, 276, GroupLayout.PREFERRED_SIZE)))))
+                        .addComponent(renderJScrollPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(12, 12, 12)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel1, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 276, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(mainTabbedPane, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 276, GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(titleJLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(renderJScrollPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(mainTabbedPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(mainTabbedPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(renderJScrollPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(buttonJPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1076,11 +1141,16 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         setVisible(false);
     }//GEN-LAST:event_cancelJButtonActionPerformed
 
-    private void finishJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_finishJButtonActionPerformed
+    private void commitJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commitJButtonActionPerformed
 
-        // Apply current changes
-        finish();
-    }//GEN-LAST:event_finishJButtonActionPerformed
+        // The way to check is far below this
+        if (box_delegate.isSelected()) {
+            // Apply current changes
+            commit();
+        } else {
+            JOptionPane.showMessageDialog(this, "Please check the information provided for fields marked RED");
+        }
+    }//GEN-LAST:event_commitJButtonActionPerformed
 
     private void scriptJTableMouseClicked(MouseEvent evt) {//GEN-FIRST:event_scriptJTableMouseClicked
 
@@ -1143,11 +1213,11 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
     private void button_generateActionPerformed(ActionEvent evt) {//GEN-FIRST:event_button_generateActionPerformed
 
         // Just to make sure.
-        if (binder.isEditting() == false) {
+        //if (binder.isEditting() == false) {
 
-            // Click this button to auto-generate all three forms of manifest-to-delegate identification
-            binder.testButton();
-        }
+        // Click this button to auto-generate all three forms of manifest-to-delegate identification
+        binder.testButton();
+        //}
     }//GEN-LAST:event_button_generateActionPerformed
 
     private void field_nameComponentResized(ComponentEvent evt) {//GEN-FIRST:event_field_nameComponentResized
@@ -1294,6 +1364,18 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
             }
         }
     }//GEN-LAST:event_valueJFieldPropertyChange
+
+    private void lockJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_lockJButtonActionPerformed
+
+        //
+        final boolean bool = !lockJButton.isSelected();
+
+        // Change to opposite icon
+        lockJButton.setIcon(bool ? iconLock : iconUnlock);
+        lockJButton.setText(bool ? "Permission Locked" : "Permission Unlocked");
+        lockJButton.setToolTipText(bool ? "Click to Unlock Change Permissions" : "Click to Lock Change Permissions");
+        binder.lock(bool);
+    }//GEN-LAST:event_lockJButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel attributeJLabel;
     private JPanel attributeJPanel;
@@ -1303,6 +1385,7 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
     private JPanel buttonJPanel;
     private JButton button_generate;
     private JButton cancelJButton;
+    private JButton commitJButton;
     private JLabel displayJLabel;
     private JPanel editorTabJPanel;
     private JTextField field_display;
@@ -1312,10 +1395,10 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
     private JTextField field_plugin;
     private JTextField field_reference;
     private JTextField field_width;
+    private Box.Filler filler1;
     private Box.Filler filler2;
     private Box.Filler filler3;
     private Box.Filler filler5;
-    private JButton finishJButton;
     private JLabel heightJLabel;
     private JButton imageJButton;
     private JButton itemJButton;
@@ -1326,7 +1409,9 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
     private JPanel itemTabJPanel;
     private JLabel jLabel1;
     private JLabel jLabel2;
+    private JPanel jPanel1;
     private JLabel locationJLabel;
+    private JToggleButton lockJButton;
     private JTabbedPane mainTabbedPane;
     private JLabel nameJLabel;
     private JLabel packageJLabel;
@@ -1337,63 +1422,7 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
     private JTable scriptJTable;
     private JPanel scriptTabJPanel;
     private JPanel settingJPanel;
-    private JLabel titleJLabel;
     private JFormattedTextField valueJField;
     private JLabel widthJLabel;
     // End of variables declaration//GEN-END:variables
-
-    @Override
-    public void tableChanged(TableModelEvent e) {
-
-        // Grab the Model of the Changed Table in this case AncestorTable is a given.
-        TableModel model = (TableModel) e.getSource();
-
-        // Get the selected Row and Column
-        int selectedRow = e.getFirstRow();
-        int selectedColumn = e.getColumn();
-
-        // Get the Name of the Column Changed for Parse Method
-        String selectedColumnName = model.getColumnName(selectedColumn);
-
-        // Get the Value of the Changed Column for Parse Method
-        String selectedColumnValue = String.valueOf(model.getValueAt(selectedRow, selectedColumn));
-
-        if (this.attributeJTable.getModel() == model) {
-
-            // Apply settings to stat map
-            editedStatMap.put(selectedColumnName, selectedColumnValue);
-        } else if (this.itemJTable.getModel() == model) {
-
-            //
-            double newChance;
-
-            try {
-
-                // Ask for chance to drop
-                newChance = Double.parseDouble(selectedColumnValue);
-
-                // Reset if out of bounds
-                if (newChance > 100.0 || newChance < 0.0) {
-                    newChance = 50.0;
-                }
-            } catch (NumberFormatException nfe) {
-
-                // Reset chance to .5 if you type in illegal chars
-                newChance = 50.0;
-            }
-
-            // Apply settings to item map
-            //editedDropMap.put(((Item)delegate.getResource(Item.class, selectedColumnName).getValue()), newChance);
-        }
-    }
-
-    @Override
-    public void animationEnd(AnimationEvent event) {
-        imageJPanel.repaint();
-    }
-
-    @Override
-    public void animationStep(AnimationEvent event) {
-        imageJPanel.repaint();
-    }
 }

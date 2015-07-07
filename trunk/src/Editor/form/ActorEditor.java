@@ -1,5 +1,6 @@
 /**
  * Copyright (c) 2013, Robert Cherry * All rights reserved.
+ * Modified 2015, Hoang Tran
  *
  * This file is part of the Faust Editor.
  *
@@ -76,7 +77,7 @@ import javax.swing.JToggleButton;
 
 /**
  *
- * @author Robert A. Cherry
+ * @author Robert A. Cherry, Hoang Tran
  */
 public class ActorEditor extends javax.swing.JDialog implements AnimationListener, TableModelListener {
 

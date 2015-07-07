@@ -72,6 +72,7 @@ import javax.swing.table.TableModel;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import Editor.listener.ManifestBinder;
+import java.awt.Color;
 import java.awt.Insets;
 import javax.swing.JToggleButton;
 
@@ -186,6 +187,8 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         // Actor stats
         resource.setAttackDamage(attackDamageChanged);
         resource.setAttackDefense(attackDefenseChanged);
+        // Now actually stores the magic damage
+        resource.setMagicDamage(magicDamageChanged);
 
         // Build a new Drop Hash Map from Table Contents and apply drop list change
         resource.setDropList(editedDropMap);
@@ -1148,8 +1151,18 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         if (box_delegate.isSelected()) {
             // Apply current changes
             commit();
+            displayJLabel.setForeground(Color.BLACK);
+            referenceJLabel.setForeground(Color.BLACK);
+            nameJLabel.setForeground(Color.BLACK);
         } else {
             JOptionPane.showMessageDialog(this, "Please check the information provided for fields marked RED");
+            // This is most likely the only thing missing, but check to be sure
+            if (field_display.getText().equals(""))
+                displayJLabel.setForeground(Color.RED);
+            if (field_reference.getText().equals(""))
+                referenceJLabel.setForeground(Color.RED);
+            if (field_name.getText().equals(""))
+                nameJLabel.setForeground(Color.RED);
         }
     }//GEN-LAST:event_commitJButtonActionPerformed
 
@@ -1374,6 +1387,7 @@ public class ActorEditor extends javax.swing.JDialog implements AnimationListene
         // Change to opposite icon
         lockJButton.setIcon(bool ? iconLock : iconUnlock);
         lockJButton.setText(bool ? "Permission Locked" : "Permission Unlocked");
+        valueJField.setEditable(!bool); // Disable editing value if locked
         lockJButton.setToolTipText(bool ? "Click to Unlock Change Permissions" : "Click to Lock Change Permissions");
         binder.lock(bool);
     }//GEN-LAST:event_lockJButtonActionPerformed

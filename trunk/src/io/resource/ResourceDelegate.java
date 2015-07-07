@@ -1,5 +1,6 @@
 /**
  * Copyright (c) 2013, Robert Cherry * All rights reserved.
+ * Modified 2015, Hoang Tran
  *
  * This file is part of the Faust Engine.
  *
@@ -428,11 +429,7 @@ public class ResourceDelegate {
         if (listFiles != null) {
 
             // The current list of files in the current sub directory
-            for (int i = 0; i < listFiles.length; i++) {
-
-                // Current file in list
-                final File current = listFiles[i];
-
+            for (File current : listFiles) {
                 // Grab the extension from the current file
                 final String extension = FileUtils.getExtension(current);
 
@@ -538,7 +535,7 @@ public class ResourceDelegate {
         final int count = getInstanceCount(resource);
 
         // Could return as integer value (0 for none found | 1 for if we found just one | 2 for if we found an extra entry)
-        return (count == 1 ? true : false);
+        return (count == 1);
     }
 
     public DataRef[] detectConflictions() {
@@ -599,10 +596,7 @@ public class ResourceDelegate {
             final String referenceDisplayName = reference.getDisplayName();
             final String referenceEditorName = reference.getEditorName();
 
-            for (int i = 0; i < referenceList.size(); i++) {
-
-                //
-                final DataRef current = referenceList.get(i);
+            for (DataRef current : referenceList) {
                 final String currentEditorId = current.getEditorId();
                 final String currentDisplayName = current.getDisplayName();
                 final String currentEditorName = current.getEditorName();
@@ -611,15 +605,12 @@ public class ResourceDelegate {
                 if (reference != current) {
                     if (currentDisplayName.equalsIgnoreCase(referenceDisplayName)) {
                         references.add(current);
-                        continue;
                     } else if (currentEditorId.equalsIgnoreCase(referenceEditorId)) {
                         references.add(current);
-                        continue;
                     } else if (currentEditorName.equalsIgnoreCase(referenceEditorName)) {
                         references.add(current);
-                        continue;
                     }
-
+                    // Goes to next iteration anyways: removed the continue; line
                 }
             }
         }
@@ -638,10 +629,9 @@ public class ResourceDelegate {
         }
 
         // Iterate over loose references
-        for (int i = 0; i < referenceList.size(); i++) {
-
+        for (DataRef looseReference : referenceList){
             // The event notifier will tell the visual components to emtpy their collections of resources
-            fireEventNotifier(referenceList.get(i), DelegateEvent.REFERENCE_REMOVED);
+            fireEventNotifier(looseReference, DelegateEvent.REFERENCE_REMOVED);
         }
 
         // Clear it all
@@ -738,11 +728,7 @@ public class ResourceDelegate {
             final File[] list = FileUtils.getDirectoryContents(new File(cacheDirectory));
 
             // Iterate
-            for (int i = 0; i < list.length; i++) {
-
-                // Current file in list
-                final File current = list[i];
-
+            for (File current : list) {
                 // Grab the extension
                 final String extension = FileUtils.getExtension(current);
 
@@ -789,11 +775,7 @@ public class ResourceDelegate {
             final File[] list = FileUtils.getDirectoryContents(new File(pictureFolder));
 
             // Iterate
-            for (int i = 0; i < list.length; i++) {
-
-                // Current file in list
-                final File current = list[i];
-
+            for (File current : list) {
                 // Grab the extension
                 final String extension = FileUtils.getExtension(current);
 
@@ -829,11 +811,7 @@ public class ResourceDelegate {
             final File[] list = FileUtils.getDirectoryContents(new File(addonDirectory));
 
             // Iterate over deep search
-            for (int i = 0; i < list.length; i++) {
-
-                // Read the plugins
-                final File current = list[i];
-
+            for (File current : list) {
                 // Grab the extension
                 final String extension = FileUtils.getExtension(current);
 
@@ -878,11 +856,7 @@ public class ResourceDelegate {
         final World[] worlds = (World[]) this.getType(World.class);
 
         // Iterate over the collection of world instances
-        for (int i = 0; i < worlds.length; i++) {
-
-            // Grab current world
-            final World world = worlds[i];
-
+        for (World world : worlds) {
             // Validate the world
             validateWorld(world);
         }
@@ -927,11 +901,7 @@ public class ResourceDelegate {
             final ArrayList<WorldCell> cellList = world.getCellList();
 
             // Iterate over the worlds collection of cells
-            for (int i = 0; i < cellList.size(); i++) {
-
-                // Grab the world cell
-                final WorldCell worldCell = cellList.get(i);
-
+            for (WorldCell worldCell : cellList) {
                 // Write the cell out; overwrite if nessecary
                 ResourceWriter.write(this, worldCell);
             }
@@ -953,11 +923,7 @@ public class ResourceDelegate {
                 final ArrayList<WorldCell> cellList = world.getCellList();
 
                 //
-                for (int i = 0; i < cellList.size(); i++) {
-
-                    // Grab the world cell
-                    final WorldCell worldCell = cellList.get(i);
-
+                for (WorldCell worldCell : cellList) {
                     // Write the map out to disk
                     final File worldCellFile = ResourceWriter.write(this, worldCell);
 
@@ -971,11 +937,7 @@ public class ResourceDelegate {
     public void validatePackages() {
 
         // Iterate over the list of plugins
-        for (int i = 0; i < packageList.size(); i++) {
-
-            // Grab the current dataPackage
-            final DataPackage dataPackage = packageList.get(i);
-
+        for (DataPackage dataPackage : packageList) {
             // Apply all the recorded changes; adjusts all the content to the changes the user made during this run of the editor
             dataPackage.applyChanges(this);
         }
@@ -984,11 +946,7 @@ public class ResourceDelegate {
     public DataRef echoReference(WorldResource resource) {
 
         // Iterate over entire reference list
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab the current reference
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             // Grab its resource
             final WorldResource current = reference.getResource();
 
@@ -1005,11 +963,7 @@ public class ResourceDelegate {
     public DataRef echoPackage(DataPackage dataPackage) {
 
         // Iterate over entire reference list
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab the current reference
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             //
             final DataPackage current = reference.getPackage();
 
@@ -1032,11 +986,7 @@ public class ResourceDelegate {
     public DataRef echoFile(File file) {
 
         // Iterate over entire reference list
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab the current reference
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             // Grab its resource
             final WorldResource current = reference.getResource();
 
@@ -1143,11 +1093,7 @@ public class ResourceDelegate {
         final DataPackage[] plugins = getDataPackages();
 
         // Iterate over the list of ResourcePlugins
-        for (int i = 0; i < plugins.length; i++) {
-
-            // Grab the current ResourcePlugin
-            final DataPackage pack = plugins[i];
-
+        for (DataPackage pack : plugins) {
             // If and only if dataPackage exists
             if (packageID != null) {
 
@@ -1175,11 +1121,7 @@ public class ResourceDelegate {
         int count = 0;
 
         // Iterate over the Citation List
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab the current reference
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             //
             final WorldResource current = reference.getResource();
 
@@ -1204,11 +1146,7 @@ public class ResourceDelegate {
         final ArrayList<Object> output = new ArrayList<>();
 
         // Iterate over the reference list
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab the current Citation
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             // Grab the current resource
             final Object resource = reference.getResource();
 
@@ -1234,11 +1172,7 @@ public class ResourceDelegate {
         final ArrayList<Object> output = new ArrayList<>();
 
         // Iterate over the reference list
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab the current Citation
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             // Grab the current resource
             final Object resource = reference.getResource();
 
@@ -1262,11 +1196,7 @@ public class ResourceDelegate {
         }
 
         // Iterate over the Plugin List
-        for (int i = 0; i < packageList.size(); i++) {
-
-            // Grab the current dataPackage
-            final DataPackage pack = packageList.get(i);
-
+        for (DataPackage pack : packageList) {
             switch (type) {
                 case ID_EDITOR_REFERENCE:
                     // Now Ask
@@ -1295,11 +1225,7 @@ public class ResourceDelegate {
         }
 
         // Iterate over the Citation List
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab the current Citation
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             switch (type) {
                 case ID_EDITOR_REFERENCE:
                     // Now Ask
@@ -1315,7 +1241,6 @@ public class ResourceDelegate {
                         return reference;
                     }
             }
-
         }
 
         // Otherwise there is no reference by that reference id
@@ -1348,11 +1273,7 @@ public class ResourceDelegate {
         }
 
         // Iterate over the Citation List
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab the current Citation
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             // Grab the current resource
             final WorldResource resource = reference.getResource();
 
@@ -1374,11 +1295,7 @@ public class ResourceDelegate {
         }
 
         // Iterate over the Citation List
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab the current reference
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             switch (type) {
                 case ID_EDITOR_REFERENCE:
                     // Now Ask
@@ -1408,8 +1325,8 @@ public class ResourceDelegate {
         }
 
         // Check for accepted Resource Reader Extensions
-        for (int i = 0; i < ResourceReader.getReaderFormatNames().length; i++) {
-            if (string.equals(ResourceReader.getReaderFormatNames()[i])) {
+        for (String readerFormatName : ResourceReader.getReaderFormatNames()) {
+            if (string.equals(readerFormatName)) {
                 return true;
             }
         }
@@ -1425,13 +1342,8 @@ public class ResourceDelegate {
             return false;
         }
 
-        // Check
-        if (string.equals(ResourceReader.MW_ARCHIVE_EXTENSION)) {
-            return true;
-        }
-
-        // Return false otherwise
-        return false;
+        // Is valid string, simply return whether it is a package extension
+        return string.equals(ResourceReader.MW_ARCHIVE_EXTENSION);
     }
 
     public boolean isAcceptableID(int type, String id) {
@@ -1517,11 +1429,7 @@ public class ResourceDelegate {
         int count = 0;
 
         //
-        for (int i = 0; i < referenceList.size(); i++) {
-
-            // Grab current data reference;
-            final DataRef reference = referenceList.get(i);
-
+        for (DataRef reference : referenceList) {
             //
             switch (type) {
                 case ID_EDITOR_REFERENCE:
@@ -1545,7 +1453,7 @@ public class ResourceDelegate {
             }
 
             //
-            conflicted = count > 1 ? true : false;
+            conflicted = (count > 1);
         }
 
         //

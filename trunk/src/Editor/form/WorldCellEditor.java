@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2013, Robert Cherry
- * Last modified 2015, Hoang Tran
+ * Modified 2015, Hoang Tran
  * All rights reserved.
  *
  * This file is part of the Faust Editor.
@@ -113,7 +113,7 @@ public class WorldCellEditor extends javax.swing.JDialog {
         //binder.setEdit(edit);
 
         // Either or method above.
-        binder.setEdit(delegate.getInstanceCount(resource) >= 1 ? true : false);
+        binder.setEdit(delegate.getInstanceCount(resource) >= 1);
         button_generate.setEnabled(!binder.isEditting());
     }
 

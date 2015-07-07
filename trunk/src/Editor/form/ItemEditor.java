@@ -1,5 +1,6 @@
 /**
  * Copyright (c) 2013, Robert Cherry * All rights reserved.
+ * Modified 2015, Hoang Tran
  *
  * This file is part of the Faust Editor.
  *
@@ -61,7 +62,7 @@ import Editor.listener.ManifestBinder;
 
 /**
  *
- * @author Robert A. Cherry
+ * @author Robert A. Cherry, Hoang Tran
  */
 public class ItemEditor extends javax.swing.JDialog implements TableModelListener {
 
@@ -124,7 +125,7 @@ public class ItemEditor extends javax.swing.JDialog implements TableModelListene
 
         // Fields
         binder.bind(ManifestBinder.FIELD_DISPLAY, field_display);
-        binder.bind(ManifestBinder.FIELD_REFERENCE, field_name);
+        binder.bind(ManifestBinder.FIELD_REFERENCE, field_id);
         binder.bind(ManifestBinder.FIELD_NAME, field_name);
         binder.bind(ManifestBinder.FIELD_PLUGIN, field_plugin);
         binder.bind(ManifestBinder.FIELD_LOCATION, field_location);

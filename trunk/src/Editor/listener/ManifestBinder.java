@@ -17,7 +17,7 @@ import javax.swing.JTextField;
 
 /**
  *
- * @author Robert A. Cherry
+ * @author Robert A. Cherry, Hoang Tran
  */
 public class ManifestBinder {
 
@@ -315,10 +315,12 @@ public class ManifestBinder {
             field_display.setEnabled(false);
             field_display.setEditable(false);
 
-            //
-            button_finish.setEnabled(false);
-            button_finish.setVisible(false);
-
+            // This does not appear for the world cell editor
+            if (button_finish != null){
+                button_finish.setEnabled(false);
+                button_finish.setVisible(false);
+            }
+            
             //
             listener_name.update();
             listener_reference.update();

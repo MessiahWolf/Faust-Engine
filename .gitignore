@@ -42,5 +42,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Ignore all .class files
+# Ignore post-compilation files
 *.class
+*.xml
+*.jar

@@ -44,5 +44,14 @@ Temporary Items
 
 # Ignore post-compilation files
 *.class
-*.xml
-*.jar
+
+# Ignore certain auto generated files
+DP*.xml
+AN*.xml
+TS*.xml
+WA*.xml
+BD*.xml
+WE*.xml
+WI*.xml
+UK*.xml
+*.form

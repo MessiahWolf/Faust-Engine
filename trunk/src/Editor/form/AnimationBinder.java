@@ -16,7 +16,7 @@ import javax.swing.ImageIcon;
 
 /**
  *
- * @author Robert A. Cherry
+ * @author Robert A. Cherry, Hoang Tran
  */
 public class AnimationBinder extends javax.swing.JDialog implements AnimationListener {
 
@@ -90,11 +90,7 @@ public class AnimationBinder extends javax.swing.JDialog implements AnimationLis
         final WorldAction[] actions = WorldAction.values();
 
         // Consider each action
-        for (int i = 0; i < actions.length; i++) {
-
-            //
-            final WorldAction iAction = actions[i];
-
+        for (WorldAction iAction : actions) {
             //
             model.addElement(iAction);
         }
@@ -114,19 +110,10 @@ public class AnimationBinder extends javax.swing.JDialog implements AnimationLis
         if (string == null || string.isEmpty()) {
             return string;
         }
-
-        // Make the first letter Capital
-        char c = string.charAt(0);
-
-        // If c is a lowercase letter
-        if (c >= 97 && c <= 122) {
-
-            // Make it capital
-            c -= 32;
-        }
-
-        //
-        string = String.valueOf(c).concat( string.substring(1, string.length()).toLowerCase() );
+        
+        // In case of Unicode, we use this to guarantee first letter's capitalized
+        string = string.substring(0, 1).toUpperCase() + 
+                ((string.length() > 1)? string.substring(1) : "");
         
         //
         return string;

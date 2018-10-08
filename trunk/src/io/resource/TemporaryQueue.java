@@ -37,7 +37,7 @@ import java.util.Map;
 public class TemporaryQueue {
 
     // Variable Delcaration
-    private HashMap<Integer, WorldResource> changeMap;
+    private final HashMap<Integer, WorldResource> changeMap;
     // Data Types
     public static final int FLAG_ADD = 0x001;
     public static final int FLAG_REMOVE = 0x002;
@@ -54,7 +54,7 @@ public class TemporaryQueue {
 
         // Store by the old id to change, and the new resource to be replaced
         changeMap.put(flag, resource);
-        
+
         //
         //printChanges();
     }
@@ -76,10 +76,10 @@ public class TemporaryQueue {
                 // A simple add operation
                 ResourceWriter.write(delegate, resource);
             } else if (flag == FLAG_REMOVE) {
-                
+
                 //
                 final FileSearch search = new FileSearch(new File(delegate.getCacheDirectory()), resource.getReferenceName(), true);
-                
+
                 // Perform the search
                 search.perform();
 
@@ -96,10 +96,10 @@ public class TemporaryQueue {
                     }
                 }
             } else if (flag == FLAG_REPLACE) {
-                
+
                 //
                 final FileSearch search = new FileSearch(new File(delegate.getCacheDirectory()), resource.getReferenceName(), true);
-                
+
                 // Perform the search
                 search.perform();
 
@@ -108,7 +108,7 @@ public class TemporaryQueue {
 
                 // Did we find it?
                 if (found != null) {
-                    
+
                     // Delete the file
                     try {
                         FileUtils.eraseFile(found);
@@ -121,20 +121,22 @@ public class TemporaryQueue {
                 ResourceWriter.write(delegate, resource);
             }
         }
-        
+
         // Clear the change map
         changeMap.clear();
     }
 
     public boolean hasChanges() {
-        return changeMap.isEmpty() ? false : true;
+        return changeMap.isEmpty();
     }
 
     public HashMap<Integer, WorldResource> getChanges() {
         return changeMap;
     }
-    
+
     public void printChanges() {
+        
+        //
         for (Map.Entry<Integer, WorldResource> changes : changeMap.entrySet()) {
             System.out.println("Change Detected: " + changes.getKey() + " | " + changes.getValue().getDisplayName());
         }

@@ -22,10 +22,12 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
+import tracer.AlphaTracer;
 
 public class WorldTile extends WorldObject {
 
@@ -42,10 +44,43 @@ public class WorldTile extends WorldObject {
     public WorldTile(Tileset tileset, int index) {
 
         // Call to super
-        super(null, tileset.packageID,tileset.referenceID,  tileset.referenceName, tileset.displayName);
+        super(null, tileset.packageID, tileset.referenceID, tileset.referenceName, tileset.displayName);
 
         // Set my graphic
         graphic = tileset.images[index];
+
+        if (graphic != null) {
+
+            //
+            final BufferedImage bi = new BufferedImage(graphic.getWidth(), graphic.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+            // Cast to 2D Graphics
+            final Graphics2D manet = (Graphics2D) bi.createGraphics();
+
+            // Setup the initial Transformations
+            final AffineTransform transformOriginal = manet.getTransform();
+            final AffineTransform transformImage = new AffineTransform();
+
+            // Begin the Transformation
+            //transformImage.setToTranslation(x, y);
+            transformImage.rotate(Math.toRadians(rotation), graphic.getWidth() / 2, graphic.getHeight() / 2);
+
+            // Draw the image
+            manet.drawImage(graphic, transformImage, null);
+
+            //
+            manet.setTransform(transformOriginal);
+            manet.dispose();
+
+            //
+            final AlphaTracer tracer = new AlphaTracer(bi);
+            tracer.setPrecision(32);
+            tracer.flash();
+
+            //
+            polygon = tracer.getPolygonList().get(0);
+            polygon.translate(x, y);
+        }
 
         // Custom options
         this.tileset = tileset;
@@ -69,7 +104,7 @@ public class WorldTile extends WorldObject {
         copy.rotation = rotation;
         copy.x = x;
         copy.y = y;
-        
+
         // Copy attributes
         copy.setAttributeMap(attributeMap);
 
@@ -140,7 +175,17 @@ public class WorldTile extends WorldObject {
     }
 
     @Override
+    public Polygon getPreciseBounds() {
+        return polygon;
+    }
+
+    @Override
     public void draw(Graphics monet, ImageObserver obs, float alpha) {
+
+        //
+        if (visible == false) {
+            return;
+        }
 
         // Draw the image at location
         if (graphic != null) {
@@ -163,13 +208,16 @@ public class WorldTile extends WorldObject {
             if (border) {
 
                 // Stroke of four width
-                manet.setStroke(new BasicStroke(4f));
+                manet.setStroke(new BasicStroke(1.5f));
 
                 // Change the color
                 manet.setColor(new Color(65, 105, 255));
 
                 // Fill the entire bounds
-                manet.fill(getBounds());
+                manet.draw(getPreciseBounds());
+                
+                //
+                manet.setStroke(new BasicStroke());
             }
 
             //
@@ -194,6 +242,39 @@ public class WorldTile extends WorldObject {
 
                 //  Grab the graphic using the index given
                 graphic = tileset.images[index];
+
+                if (graphic != null) {
+
+                    //
+                    final BufferedImage bi = new BufferedImage(graphic.getWidth(), graphic.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+                    // Cast to 2D Graphics
+                    final Graphics2D manet = (Graphics2D) bi.createGraphics();
+
+                    // Setup the initial Transformations
+                    final AffineTransform transformOriginal = manet.getTransform();
+                    final AffineTransform transformImage = new AffineTransform();
+
+                    // Begin the Transformation
+                    //transformImage.setToTranslation(x, y);
+                    transformImage.rotate(Math.toRadians(rotation), graphic.getWidth() / 2, graphic.getHeight() / 2);
+
+                    // Draw the image
+                    manet.drawImage(graphic, transformImage, null);
+
+                    //
+                    manet.setTransform(transformOriginal);
+                    manet.dispose();
+
+                    //
+                    final AlphaTracer tracer = new AlphaTracer(bi);
+                    tracer.setPrecision(32);
+                    tracer.flash();
+
+                    //
+                    polygon = tracer.getPolygonList().get(0);
+                    polygon.translate(x, y);
+                }
 
                 // No longer needed
                 requestMap.remove(referenceID);

@@ -19,8 +19,6 @@
 package core.world;
 
 import io.resource.ResourceProducer;
-import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 
@@ -75,6 +73,7 @@ public class Tileset extends Illustration {
         matchFieldValues(getClass().getSuperclass());
         matchFieldValues(getClass());
 
+        //
         if (picture != null) {
 
             // Create the buffered images
@@ -87,7 +86,7 @@ public class Tileset extends Illustration {
 
     @Override
     public BufferedImage draw(ImageObserver obs, float alpha) {
-        // Do nothing
+        // Do nothing for TILESETS, but DRAW WORLDTILES.
         return null;
     }
 }

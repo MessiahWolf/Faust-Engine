@@ -23,12 +23,10 @@ import io.util.FileUtils;
 import io.util.PackageUtils;
 import io.util.FileSearch;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import org.w3c.dom.Document;
@@ -51,22 +49,20 @@ public class ResourceReader {
     public static ImageIcon readClassPathIcon(Class closs, String path) {
 
         //
-        final Toolkit toolkit = Toolkit.getDefaultToolkit();
-
-        //
-        final Image image = toolkit.getImage(closs.getResource(path));
-
-        //
-        return new ImageIcon(image);
+        return new ImageIcon(readClassImage(closs, path));
     }
 
     public static Image readClassImage(Class closs, String path) {
 
         //
-        final Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Image image = null;
 
-        //
-        final Image image = toolkit.getImage(closs.getResource(path));
+        try {
+            //
+            image = ImageIO.read(new File(closs.getResource(path).getPath()));
+        } catch (IOException ioe) {
+            // @TODO HANDLE EXCEPTION
+        }
 
         //
         return image;
@@ -76,6 +72,7 @@ public class ResourceReader {
 
         // Do not read directories; this should not be used to load data Packages
         if (file.isFile()) {
+            // System.out.println("Reading File: " + file.getAbsolutePath());
 
             // Reads xml files only; add more if you want
             switch (FileUtils.getExtension(file)) {
@@ -101,6 +98,8 @@ public class ResourceReader {
 
             try {
 
+                // System.out.println("Reading File: " + file.getAbsolutePath());
+
                 //
                 image = ImageIO.read(new BufferedInputStream(new FileInputStream(file.getAbsolutePath())));
             } catch (IOException ioe) {
@@ -114,14 +113,13 @@ public class ResourceReader {
 
     public static DataPackage readPackage(ResourceDelegate delegate, File file, boolean add) {
 
+        //
+        // System.out.println("Package: " + file.getName());
         // Extract the acrhive to a temporary folder in the cache directory
         final File temporary = PackageUtils.extract(delegate, file);
 
         // Grab the contents of that extracted folder -- Grabs every last file recursively
         final File[] contents = FileUtils.getDirectoryContents(temporary);
-
-        // Store those entries as citations in an arraylist
-        final ArrayList<DataRef> references = new ArrayList<>(contents.length);
 
         // Create a new file search
         FileSearch search = new FileSearch(temporary, "manifest.xml", true);
@@ -154,11 +152,8 @@ public class ResourceReader {
             final DataPackage dataPackage = new DataPackage(author, email, version, referenceID, displayName, referenceName, document);
 
             // Iterate over the content folder (Will only grab files, not directories)
-            for (int i = 0; i < contents.length; i++) {
-
+            for (File current : contents) {
                 // Current file in the iteration
-                final File current = contents[i];
-
                 // Store the entry
                 dataPackage.addFile(delegate, current);
             }
@@ -169,9 +164,6 @@ public class ResourceReader {
                 // Add as a dataPackage
                 delegate.addDataPackage(dataPackage);
             }
-
-            // Clear the map
-            references.clear();
 
             // Delete the temporary folders and extracted folders
             try {

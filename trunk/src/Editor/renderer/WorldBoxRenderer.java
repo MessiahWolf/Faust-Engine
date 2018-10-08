@@ -20,7 +20,6 @@
 */
 package Editor.renderer;
 
-import core.world.World;
 import io.resource.ResourceDelegate;
 import io.resource.ResourceReader;
 import java.awt.Component;
@@ -35,33 +34,13 @@ import javax.swing.ListCellRenderer;
  */
 public class WorldBoxRenderer extends JLabel implements ListCellRenderer {
 
-    // Variable Declaration
-    private ImageIcon iconWorld;
-    // End of Variable Declaration
-
-    public WorldBoxRenderer() {
-
-        //
-        final Class closs = getClass();
-
-        //
-        iconWorld = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-world24.png");
-    }
-
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
         if (value != null) {
 
             //
-            if (value instanceof World) {
-                
-                // Cast value to Resource
-                final World resource = (World) value;
-
-                //
-                setText(resource.getDisplayName());
-            } else if (String.valueOf(value).equalsIgnoreCase(ResourceDelegate.UNPACKAGED_STATEMENT)) {
+            if (String.valueOf(value).equalsIgnoreCase(ResourceDelegate.UNPACKAGED_STATEMENT)) {
                 setText(ResourceDelegate.UNPACKAGED_STATEMENT);
             }
         }

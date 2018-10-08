@@ -361,7 +361,7 @@ public class DataPackage {
                     resource = ResourceReader.read(delegate, file);
 
                     // Set the dataPackage Id afterwards
-                    resource.setPackageId(referenceID);
+                    resource.setPackageID(referenceID);
                 } catch (Exception ioe) {
                     System.err.println("Error reading resource into Data Package: " + ioe);
                 }

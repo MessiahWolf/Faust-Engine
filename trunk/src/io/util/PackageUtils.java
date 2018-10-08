@@ -264,7 +264,7 @@ public class PackageUtils {
         final File manifest = ManifestUtils.writeManifest(content.getAbsolutePath(), pack);
 
         // @note addon should be the addon folder for the Faust Game.
-        final String name = addon.getAbsolutePath() + File.separator + FileUtils.extend(pack.getReferenceName(), ResourceReader.MW_ARCHIVE_EXTENSION);
+        final String name = addon.getAbsolutePath().concat(File.separator).concat(FileUtils.extend(pack.getReferenceName(), ResourceReader.MW_ARCHIVE_EXTENSION));
 
         // If and only if newFile exists
         if (addon.exists()) {
@@ -272,7 +272,7 @@ public class PackageUtils {
             try {
 
                 // new Byte buffer size
-                byte[] buffer = new byte[2156];
+                final byte[] buffer = new byte[2156];
 
                 // Create the Zip file in the output directory
                 try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(name))) {
@@ -296,7 +296,7 @@ public class PackageUtils {
 
         // Now delete the cache foler if delete is true
         if (delete) {
-            
+
             //
             FileUtils.eraseFile(manifest);
 

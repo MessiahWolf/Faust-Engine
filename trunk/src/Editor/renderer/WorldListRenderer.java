@@ -20,8 +20,7 @@
 */
 package Editor.renderer;
 
-import core.world.WorldCell;
-import core.world.World;
+import core.world.Room;
 import io.resource.ResourceReader;
 import java.awt.Color;
 import java.awt.Component;
@@ -62,18 +61,10 @@ public class WorldListRenderer extends JLabel implements ListCellRenderer {
         setForeground(isSelected ? color : Color.BLACK);
 
         // Ask
-        if (value instanceof World) {
-
-            // Cast to a FWorld
-            final World world = (World) value;
-
-            // Set values
-            setIcon(iconWorld);
-            setText(world.getDisplayName());
-        } else if (value instanceof WorldCell) {
+        if (value instanceof Room) {
 
             // Cast to a FMap
-            final WorldCell map = (WorldCell) value;
+            final Room map = (Room) value;
             
             // Set values
             setIcon(iconMap);

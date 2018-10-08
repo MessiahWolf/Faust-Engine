@@ -24,8 +24,7 @@ import core.event.DelegateListener;
 import core.world.Actor;
 import core.world.Animation;
 import core.world.Backdrop;
-import core.world.World;
-import core.world.WorldCell;
+import core.world.Room;
 import core.world.WorldObject;
 import core.world.Tileset;
 import io.resource.DataRef;
@@ -36,13 +35,10 @@ import core.world.WorldItem;
 import io.resource.DataPackage;
 import core.world.WorldScript;
 import core.world.item.Weapon;
-import io.resource.ResourceRequest;
-import io.util.TempUtils;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
-import java.util.HashMap;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JScrollPane;
@@ -53,6 +49,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import Editor.renderer.ResourceTreeRenderer;
 import Editor.transfer.NodeTransferHandler;
+import core.world.LightSource;
 
 /**
  *
@@ -69,12 +66,12 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
     private DefaultMutableTreeNode defaultPackageNode;
     private DefaultMutableTreeNode defaultWorldCellNode;
     private DefaultMutableTreeNode defaultScriptNode;
+    private DefaultMutableTreeNode defaultLightNode;
     private DefaultMutableTreeNode defaultRootNode;
-    private DefaultMutableTreeNode defaultWorldNode;
     private DefaultTreeModel defaultTreeModel;
     // Project Classes
-    private FaustEditor editor;
-    private ResourceDelegate delegate;
+    private final FaustEditor editor;
+    private final ResourceDelegate delegate;
     // End of Variable Declaration
 
     public ResourceManager(FaustEditor editor, ResourceDelegate delegate) {
@@ -109,11 +106,11 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
         defaultBackgroundNode = new DefaultMutableTreeNode("Backgrounds");
         // Static Environments
         defaultWorldCellNode = new DefaultMutableTreeNode("World Cells");
-        defaultWorldNode = new DefaultMutableTreeNode("Worlds");
         // Resources
         defaultPackageNode = new DefaultMutableTreeNode("Data Packages");
         //
         defaultScriptNode = new DefaultMutableTreeNode("World Object Scripts");
+        defaultLightNode = new DefaultMutableTreeNode("Light Sources");
         // Soon to come a fMap node -- once its all put together
 
         // Add categories to tree model
@@ -121,9 +118,9 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
         defaultRootNode.add(defaultWeaponNode);
         defaultRootNode.add(defaultAnimationNode);
         defaultRootNode.add(defaultBackgroundNode);
+        defaultRootNode.add(defaultLightNode);
         defaultRootNode.add(defaultWorldCellNode);
         defaultRootNode.add(defaultPackageNode);
-        defaultRootNode.add(defaultWorldNode);
         defaultRootNode.add(defaultScriptNode);
 
         // Set Custom Tree Renderer to allow icons to show
@@ -216,10 +213,10 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
             final DataRef[] citations = dataPackage.getCitations();
 
             // Add all its citations
-            for (int i = 0; i < citations.length; i++) {
+            for (DataRef citation : citations) {
 
                 // Add as a leaf; will auto place into correct category
-                addResource(citations[i]);
+                addResource(citation);
             }
 
             // Add the Package to the Family it belongs to
@@ -297,16 +294,18 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
             return defaultAnimationNode;
         } else if (closs == Backdrop.class) {
             return defaultBackgroundNode;
-        } else if (closs == WorldCell.class) {
+        } else if (closs == Room.class) {
             return defaultWorldCellNode;
+        } else if (closs == LightSource.class) {
+            return defaultLightNode;
         } else if (closs == DataPackage.class) {
             return defaultPackageNode;
-        } else if (closs == World.class) {
-            return defaultWorldNode;
         } else if (closs == WorldScript.class) {
             return defaultScriptNode;
         } else if (closs == Weapon.class) {
             return defaultWeaponNode;
+        } else if (closs == LightSource.class) {
+            return defaultLightNode;
         }
 
         // Return nothing
@@ -354,7 +353,7 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
 
         // Cast to a reference
         final DataRef reference = (DataRef) evt.getSource();
-
+        
         // Add the resource to the tree model
         addResource(reference);
     }
@@ -494,22 +493,10 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
                         // Check for Actor
                         if (worldObject instanceof Actor) {
 
-                            // Just show it -- No need to add
-                            final ActorEditor maker = new ActorEditor(editor, delegate, (Actor) worldObject, true);
-                            maker.setLocationRelativeTo(editor);
-                            maker.setVisible(true);
-
-                            // Dispose of it
-                            maker.dispose();
+                            // @NOT AVAILABLE YET
                         } else if (worldObject instanceof WorldItem) {
 
-                            //
-                            final ItemEditor maker = new ItemEditor(editor, delegate, (Weapon) worldObject, true);
-                            maker.setLocationRelativeTo(editor);
-                            maker.setVisible(true);
-
-                            // Dispose of it
-                            maker.dispose();
+                            // @NOT AVAILABLE YET
                         }
 
                     }
@@ -549,6 +536,23 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
                         maker.dispose();
                     }
                 }
+            } else if (object instanceof LightSource) {
+
+                //
+                final LightSource light = (LightSource) object;
+
+                if (eventButton == MouseEvent.BUTTON1) {
+                    if (clickCount == 2) {
+
+                        //
+                        final LightEditor maker = new LightEditor(editor, delegate, editor.getCanvas().getMap(), light, true);
+                        maker.setLocationRelativeTo(editor);
+                        maker.setVisible(true);
+
+                        //
+                        maker.dispose();
+                    }
+                }
             } else if (object instanceof DataPackage) {
 
                 // Cast
@@ -569,55 +573,17 @@ public class ResourceManager extends javax.swing.JPanel implements DelegateListe
                         maker.dispose();
                     }
                 }
-            } else if (object instanceof World) {
+            } else if (object instanceof Room) {
 
                 // Cast
-                final World fworld = (World) object;
-
-                // Double Left mouse click
-                if (eventButton == MouseEvent.BUTTON1) {
-
-                    //
-                    if (clickCount == 2) {
-
-                        // Show the editor
-                        final WorldEditor maker = new WorldEditor(editor, delegate, fworld, true);
-                        maker.setLocationRelativeTo(editor);
-                        maker.setVisible(true);
-
-                        // Dispose of it
-                        maker.dispose();
-                    }
-                }
-            } else if (object instanceof WorldCell) {
-
-                // Cast
-                final WorldCell map = (WorldCell) object;
+                final Room map = (Room) object;
 
                 // Double Left mouse click
                 if (eventButton == MouseEvent.BUTTON1) {
                     if (clickCount == 2) {
 
                         // Show the map editor
-                        final WorldCellEditor maker = new WorldCellEditor(editor, delegate, map, true);
-                        maker.setLocationRelativeTo(editor);
-                        maker.setVisible(true);
-
-                        // Dispose of it
-                        maker.dispose();
-                    }
-                }
-            } else if (object instanceof WorldScript) {
-
-                // Cast
-                final WorldScript script = (WorldScript) object;
-
-                //
-                if (eventButton == MouseEvent.BUTTON1) {
-                    if (clickCount == 2) {
-
-                        //
-                        final ScriptEditor maker = new ScriptEditor(editor, delegate, script, true);
+                        final RoomEditor maker = new RoomEditor(editor, delegate, map, true);
                         maker.setLocationRelativeTo(editor);
                         maker.setVisible(true);
 

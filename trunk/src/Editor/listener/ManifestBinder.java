@@ -43,7 +43,6 @@ public class ManifestBinder {
     private WorldResource resource;
     // Data Types
     private boolean existing;
-    private boolean lock = false;
     public final static int BUTTON_FINISH = 9000;
     public final static int BUTTON_GENERATE = 4000;
     public final static int BOX_DELEGATE = 0;
@@ -115,67 +114,27 @@ public class ManifestBinder {
         box.init(field_reference, field_name, field_display);
     }
 
-    public void lock(boolean lock) {
-
-        // Opposite of lock
-        this.lock = !lock;
-
-        // Disable all
-        try {
-
-            // Image Fields
-            //  field_width.setEnabled(lock);
-            //  field_width.setEditable(lock);
-            //  field_height.setEnabled(lock);
-            //  field_height.setEditable(lock);
-            //  field_location.setEnabled(lock);
-            //  field_location.setEditable(lock);
-            //  field_plugin.setEnabled(lock);
-            //  field_plugin.setEditable(lock);
-
-            // Delegate Fields
-            field_name.setEnabled(this.lock);
-            field_name.setEditable(this.lock);
-            field_display.setEnabled(this.lock);
-            field_display.setEditable(this.lock);
-            field_reference.setEnabled(this.lock);
-            field_reference.setEditable(this.lock);
-
-            //
-            button_generate.setEnabled(this.lock);
-
-            //
-            button_finish.setEnabled(this.lock);
-            button_finish.setVisible(this.lock);
-        } catch (NullPointerException npe) {
-        }
-    }
-
     public void bindImage(Picture graphic, ImageObserver observer) {
 
-        // Cannot alter while locked
-        if (lock == false) {
+        // Needs to be an existing graphic.
+        if (graphic != null) {
 
             //
-            if (graphic != null) {
+            resource = graphic;
 
-                //
-                resource = graphic;
+            // Update Graphic Location
+            field_location.setText(graphic.getDisplayName());
 
-                // Update Graphic Location
-                field_location.setText(graphic.getDisplayName());
+            // Update Width Label
+            field_width.setText(String.valueOf(graphic.getImage().getWidth(observer)));
+            field_width.setToolTipText(field_width.getText());
 
-                // Update Width Label
-                field_width.setText(String.valueOf(graphic.getImage().getWidth(observer)));
-                field_width.setToolTipText(field_width.getText());
+            // Update Height Label
+            field_height.setText(String.valueOf(graphic.getImage().getHeight(observer)));
+            field_height.setToolTipText(field_height.getText());
 
-                // Update Height Label
-                field_height.setText(String.valueOf(graphic.getImage().getHeight(observer)));
-                field_height.setToolTipText(field_height.getText());
-
-                // Update Package Field
-                field_plugin.setText(pack == null ? ResourceDelegate.UNPACKAGED_STATEMENT : pack.getDisplayName());
-            }
+            // Update Package Field
+            field_plugin.setText(pack == null ? ResourceDelegate.UNPACKAGED_STATEMENT : pack.getDisplayName());
         }
     }
 
@@ -193,7 +152,7 @@ public class ManifestBinder {
             a = delegate.generateID(ResourceDelegate.ID_EDITOR_REFERENCE, pack.getClass(), 0, 15);
             b = delegate.generateID(ResourceDelegate.ID_EDITOR_NAME, pack.getClass(), 0, 15);
             c = delegate.generateID(ResourceDelegate.ID_EDITOR_DISPLAY, pack.getClass(), 0, 15);
-        } else if (resource != null && pack == null) {
+        } else if (resource != null && pack == null || resource != null && pack.getDisplayName().equalsIgnoreCase("null")) {
 
             //
             a = delegate.generateID(ResourceDelegate.ID_EDITOR_REFERENCE, resource.getClass(), 0, 15);
@@ -233,10 +192,12 @@ public class ManifestBinder {
         //
         if (resource == null) {
 
-            //
-            field_name.setText(pack.getReferenceName());
-            field_reference.setText(pack.getReferenceId());
-            field_display.setText(pack.getDisplayName());
+            if (pack != null) {
+                //
+                field_name.setText(pack.getReferenceName());
+                field_reference.setText(pack.getReferenceId());
+                field_display.setText(pack.getDisplayName());
+            }
         } else {
 
             //
@@ -266,7 +227,7 @@ public class ManifestBinder {
 
             //
             button_finish.setEnabled(false);
-            button_finish.setVisible(false);
+            //button_finish.setVisible(false);
 
             //
             box.setSelected(true);
@@ -293,10 +254,6 @@ public class ManifestBinder {
         return existing;
     }
 
-    public boolean isLocked() {
-        return lock;
-    }
-
     public void setEdit(boolean edit) {
         this.existing = edit;
 
@@ -316,11 +273,12 @@ public class ManifestBinder {
             field_display.setEditable(false);
 
             // This does not appear for the world cell editor
-            if (button_finish != null){
-                button_finish.setEnabled(false);
-                button_finish.setVisible(false);
+            if (button_finish != null) {
+                button_finish.setText("Save");
+                //button_finish.setEnabled(false);
+                //button_finish.setVisible(false);
             }
-            
+
             //
             listener_name.update();
             listener_reference.update();

@@ -8,6 +8,7 @@ import core.world.WorldResource;
 import io.util.FileUtils;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
@@ -23,7 +24,7 @@ public class ResourceViewer extends javax.swing.JDialog {
     // Swing Native Classes
     private ImagePanel imagePanel;
     // Java Native Classes
-    private Object resource;
+    private final Object resource;
     // End of Variable Declaration
 
     public ResourceViewer(java.awt.Window parent, Object resource, boolean modal) {
@@ -44,6 +45,8 @@ public class ResourceViewer extends javax.swing.JDialog {
 
         // Easy-peasy.
         imagePanel = new ImagePanel(imageJScrollPane);
+        imagePanel.setShowTextile(false);
+        imagePanel.setShowImage(true);
 
         //
         imageJScrollPane.setViewportView(imagePanel);
@@ -177,6 +180,9 @@ public class ResourceViewer extends javax.swing.JDialog {
             } catch (Exception ioe) {
                 // Do not throw anything yet.
             }
+        } else if (object instanceof Image) {
+            //@TODO
+            final Image image = (Image) resource;
         }
 
         //
@@ -194,6 +200,8 @@ public class ResourceViewer extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+        exploreJButton = new javax.swing.JButton();
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
         closeJButton = new javax.swing.JButton();
         mainJTabbedPane = new javax.swing.JTabbedPane();
         graphicJPanel = new javax.swing.JPanel();
@@ -212,7 +220,6 @@ public class ResourceViewer extends javax.swing.JDialog {
                 return false;
             }
         };
-        exploreJButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -220,6 +227,19 @@ public class ResourceViewer extends javax.swing.JDialog {
 
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
         jPanel1.add(filler1);
+
+        exploreJButton.setText("Explore");
+        exploreJButton.setToolTipText("Open File in Explorer");
+        exploreJButton.setMaximumSize(new java.awt.Dimension(88, 26));
+        exploreJButton.setMinimumSize(new java.awt.Dimension(88, 26));
+        exploreJButton.setPreferredSize(new java.awt.Dimension(88, 26));
+        exploreJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exploreJButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(exploreJButton);
+        jPanel1.add(filler2);
 
         closeJButton.setText("Close");
         closeJButton.setMaximumSize(new java.awt.Dimension(88, 26));
@@ -312,18 +332,7 @@ public class ResourceViewer extends javax.swing.JDialog {
         attributeJTable.setPreferredSize(new java.awt.Dimension(360, 330));
         jScrollPane2.setViewportView(attributeJTable);
 
-        exploreJButton.setText("Explore");
-        exploreJButton.setToolTipText("Open File in Explorer");
-        exploreJButton.setMaximumSize(new java.awt.Dimension(69, 26));
-        exploreJButton.setMinimumSize(new java.awt.Dimension(69, 26));
-        exploreJButton.setPreferredSize(new java.awt.Dimension(69, 26));
-        exploreJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exploreJButtonActionPerformed(evt);
-            }
-        });
-
-        jLabel3.setText("Convenient view of basic file properties");
+        jLabel3.setText("View of basic file properties");
         jLabel3.setEnabled(false);
 
         javax.swing.GroupLayout detailJPanelLayout = new javax.swing.GroupLayout(detailJPanel);
@@ -333,13 +342,9 @@ public class ResourceViewer extends javax.swing.JDialog {
             .addGroup(detailJPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(detailJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(detailJPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 61, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(exploreJButton, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         detailJPanelLayout.setVerticalGroup(
             detailJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -347,13 +352,8 @@ public class ResourceViewer extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(detailJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(detailJPanelLayout.createSequentialGroup()
-                        .addComponent(exploreJButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 299, Short.MAX_VALUE))
-                    .addGroup(detailJPanelLayout.createSequentialGroup()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addContainerGap())))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         mainJTabbedPane.addTab("File Details", detailJPanel);
@@ -389,24 +389,27 @@ public class ResourceViewer extends javax.swing.JDialog {
     }//GEN-LAST:event_closeJButtonActionPerformed
 
     private void exploreJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exploreJButtonActionPerformed
-
         // TODO add your handling code here:
-        final File file = (File) resource;
-
-        //
-        try {
-
-            // Grab the Windows Operating Systems Explorer and ask it to open the file
-            final Desktop explorer = Desktop.getDesktop();
+        if (resource instanceof File) {
+            
+            //
+            final File file = (File) resource;
 
             //
-            if (file.exists()) {
+            try {
 
-                // Open in Windows Explorer
-                explorer.open(file);
+                // Grab the Windows Operating Systems Explorer and ask it to open the file
+                final Desktop explorer = Desktop.getDesktop();
+
+                //
+                if (file.exists()) {
+
+                    // Open in Windows Explorer
+                    explorer.open(file);
+                }
+            } catch (IOException ioe) {
+                // Do nothing for now.
             }
-        } catch (IOException ioe) {
-            // Do nothing for now.
         }
     }//GEN-LAST:event_exploreJButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -415,6 +418,7 @@ public class ResourceViewer extends javax.swing.JDialog {
     private javax.swing.JPanel detailJPanel;
     private javax.swing.JButton exploreJButton;
     private javax.swing.Box.Filler filler1;
+    private javax.swing.Box.Filler filler2;
     private javax.swing.JPanel graphicJPanel;
     private javax.swing.JScrollPane imageJScrollPane;
     private javax.swing.JLabel jLabel1;

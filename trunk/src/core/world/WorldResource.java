@@ -30,7 +30,7 @@ import java.util.HashMap;
  */
 public interface WorldResource {
 
-    // Reproduce an copy instance of this resource
+    // Reproduce a copy instance of this resource
     WorldResource reproduce();
 
     // Validate this resource
@@ -49,7 +49,7 @@ public interface WorldResource {
 
     String getDisplayName();
 
-    String getPackageId();
+    String getPackageID();
 
     String getReferenceName();
 
@@ -62,7 +62,7 @@ public interface WorldResource {
 
     void setReferenceID(String referenceID);
 
-    void setPackageId(String packageID);
+    void setPackageID(String packageID);
 
     void setReferenceName(String referenceName);
 

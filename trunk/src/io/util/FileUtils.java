@@ -136,8 +136,7 @@ public class FileUtils {
         }
 
         // Addon only if needed
-        if (original.endsWith(extension)) {
-
+        if (original.endsWith("." + extension)) {
             // Return original
             return original;
         }
@@ -149,11 +148,9 @@ public class FileUtils {
     public static boolean isSupported(String extension, String[] array) {
 
         // Iterate over the array of extensions
-        for (int i = 0; i < array.length; i++) {
-
+        for (String s : array) {
             // Challenge the extension
-            if (extension.equalsIgnoreCase(array[i])) {
-
+            if (extension.equalsIgnoreCase(s)) {
                 // Success
                 return true;
             }

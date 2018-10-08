@@ -18,15 +18,15 @@
  */
 package io.resource;
 
+import core.coll.CollisionWrapper;
+import core.world.LightSource;
 import core.world.WorldAction;
-import core.world.WorldTemplate;
 import core.world.WorldResource;
 import core.world.Actor;
 import core.world.Animation;
 import core.world.Backdrop;
-import core.world.World;
-import core.world.WorldCellLayer;
-import core.world.WorldCell;
+import core.world.RoomLayer;
+import core.world.Room;
 import core.world.Tileset;
 import core.world.Illustration;
 import core.world.WorldItem;
@@ -35,6 +35,8 @@ import core.world.item.Weapon;
 import core.world.WorldScript;
 import io.util.FileSearch;
 import io.util.FileUtils;
+import java.awt.Point;
+import java.awt.Polygon;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -74,97 +76,24 @@ public class ResourceMolder {
                 return handleIllustration(delegate, file, root);
             case "Weapon":
                 return handleWeapon(delegate, file, root);
-            case "WorldCell":
-                return handleWorldCell(delegate, file, root);
-            case "WorldInstance":
-                return handleWorldInstance(delegate, file, root);
-            case "WorldCellTest":
-                return handleWorldTestCell(delegate, file, root);
+            case "Room":
+                return handleRoom(delegate, file, root);
             case "WorldScript":
                 return handleWorldScript(delegate, file, root);
             case "Actor":
                 return handleWorldActor(delegate, file, root);
+            case "LightSource":
+                return handleLightSource(delegate, file, root);
             default:
                 return null;
         }
     }
 
-    public static World handleWorldInstance(ResourceDelegate delegate, File file, Node rootNode) throws Exception {
-
-        // Grab fMap Dimensions from root node attributes
-        final NamedNodeMap worldAttributes = rootNode.getAttributes();
-        final HashMap<String, Object> map = handleAttributes(rootNode);
-
-        // The SHA1 Check Sum from the file of the world instance
-        final String sha1CheckSum = FileUtils.generateChecksum(file.getAbsolutePath(), "SHA-1");
-
-        // Delegate Stuff
-        final String referenceID = worldAttributes.getNamedItem("referenceID").getNodeValue();
-        final String packageID = worldAttributes.getNamedItem("packageID").getNodeValue();
-        final String displayName = worldAttributes.getNamedItem("displayName").getNodeValue();
-        final String referenceName = worldAttributes.getNamedItem("referenceName").getNodeValue();
-
-        // Create the output fMap
-        final World worldInstance = new World(sha1CheckSum, packageID, referenceID, referenceName, displayName);
-
-        // Apply the attribute map
-        worldInstance.setAttributeMap(map);
-
-        //
-        final Node contentNode = getNodeNamed(rootNode, "content");
-
-        // Null check
-        if (contentNode != null) {
-
-            //
-            final NodeList contentList = contentNode.getChildNodes();
-
-            // Iterate over the list of fMaps
-            for (int i = 0; i < contentList.getLength(); i++) {
-
-                // Grab the current node from the iteration
-                final Node node = contentList.item(i);
-
-                // Do not accept Text Nodes
-                if (node.getNodeType() == Node.ELEMENT_NODE) {
-
-                    // Grab its attributes
-                    final NamedNodeMap attributes = node.getAttributes();
-
-                    // Grab from attributes
-                    final String cellPackageId = attributes.getNamedItem("packageID").getNodeValue();
-                    final String cellEditorId = attributes.getNamedItem("referenceID").getNodeValue();
-                    final String cellCheckSum = attributes.getNamedItem("cellCheckSum").getNodeValue();
-
-                    // Depends on the status of the packageID
-                    if (packageID.isEmpty() || packageID.equalsIgnoreCase("null")) {
-
-                        // Request from loose files (optional checksum version)
-                        delegate.makeRequest(cellEditorId, worldInstance);
-                    } else {
-
-                        // Wait for all resources to load then allocate the WorldCell to the WorldInstance.
-                        delegate.makePackageRequest(cellPackageId, cellEditorId, worldInstance);
-                    }
-                }
-            }
-        }
-
-        // Force the world to validate itself
-        worldInstance.validate();
-
-        // Return the FWorld
-        return worldInstance;
-    }
-
-    public static WorldCell handleWorldCell(ResourceDelegate delegate, File file, Node rootNode) throws Exception {
+    public static Room handleRoom(ResourceDelegate delegate, File file, Node rootNode) throws Exception {
 
         // Grab fMap Dimensions from root node attributes
         final NamedNodeMap attributeMap = rootNode.getAttributes();
         final HashMap<String, Object> attributes = handleAttributes(rootNode);
-
-        //
-        System.err.println("Handling world cell: " + file.getName());
 
         //
         final String sha1CheckSum = FileUtils.generateChecksum(file.getAbsolutePath(), "SHA-1");
@@ -178,28 +107,10 @@ public class ResourceMolder {
         final int cellHeight = Integer.parseInt(attributeMap.getNamedItem("height").getNodeValue());
 
         // Create the output fMap
-        final WorldCell worldCell = new WorldCell(null, sha1CheckSum, packageID, referenceID, referenceName, displayName, cellWidth, cellHeight);
-
-        //
-        final boolean check = attributeMap.getNamedItem("worldPackageId") != null && attributeMap.getNamedItem("worldEditorId") != null;
-
-        // Requesting a world
-        if (check) {
-
-            //
-            final String worldEditorId = attributeMap.getNamedItem("worldEditorId").getNodeValue();
-            final String worldPackageId = attributeMap.getNamedItem("worldPackageId").getNodeValue();
-
-            // The maps do not use a checksum for the world because the world uses a checksum for the worldcells
-            if (worldPackageId.isEmpty() || worldPackageId.equalsIgnoreCase("null")) {
-                delegate.makeRequest(worldEditorId, worldCell);
-            } else {
-                delegate.makePackageRequest(worldPackageId, worldEditorId, worldCell);
-            }
-        }
+        final Room room = new Room(sha1CheckSum, packageID, referenceID, referenceName, displayName, cellWidth, cellHeight);
 
         // Apply the attributes found from root node
-        worldCell.setAttributeMap(attributes);
+        room.setAttributeMap(attributes);
 
         // Grab the background if it exists
         final Node sceneryNode = getNodeNamed(rootNode, "scenery");
@@ -215,7 +126,7 @@ public class ResourceMolder {
             if (node.getNodeType() == Node.ELEMENT_NODE) {
 
                 // Parse Scenic object; namely background
-                parseScenicObject(delegate, worldCell, node);
+                parseScenicObject(delegate, room, node);
             }
         }
 
@@ -230,7 +141,7 @@ public class ResourceMolder {
             final Node node = contentList.item(i);
 
             // This should be the layer, but might contain type TEXT_NODE so ask for NODE_ELEMENT only
-            if (node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equalsIgnoreCase("WorldCellLayer")) {
+            if (node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equalsIgnoreCase("Layer")) {
 
                 // Grab the attributes for details about the map
                 final NamedNodeMap layerNodeMap = node.getAttributes();
@@ -239,7 +150,7 @@ public class ResourceMolder {
                 final String layerName = layerNodeMap.getNamedItem("displayName").getNodeValue();
 
                 // Setup the layer before hand
-                final WorldCellLayer worldCellLayer = new WorldCellLayer(worldCell, layerName);
+                final RoomLayer layer = new RoomLayer(room, layerName);
 
                 // This should be the list of world objects
                 final NodeList objectList = node.getChildNodes();
@@ -253,58 +164,21 @@ public class ResourceMolder {
                     if (object.getNodeType() == Node.ELEMENT_NODE) {
 
                         // Send it to the delegate to register the resources that it needs.
-                        parseWorldObject(delegate, worldCellLayer, object);
+                        parseWorldObject(delegate, layer, object);
                     }
                 }
 
-                // We'll add the layer to the world cell here
-                worldCell.addWorldCellLayer(worldCell.getWorld(), worldCellLayer);
+                System.out.println("Lame.");
+
+                // We'll addObject the layer to the world cell here
+                room.addLayer(layer);
+
+                System.err.println("Shutup.");
             }
         }
 
         // Should be done
-        return worldCell;
-    }
-
-    public static WorldTemplate handleWorldTestCell(ResourceDelegate delegate, File file, Node root) throws Exception {
-
-        // Value holder
-        final HashMap<String, Object> attributes = handleAttributes(root);
-
-        //
-        final String sha1CheckSum = FileUtils.generateChecksum(file.getAbsolutePath(), "SHA-1");
-
-        //
-        final NamedNodeMap attrMap = root.getAttributes();
-
-        // Grab the name of the layer
-        final String packageID = attrMap.getNamedItem("packageID").getNodeValue();
-        final String referenceName = attrMap.getNamedItem("referenceName").getNodeValue();
-        final String referenceID = attrMap.getNamedItem("referenceID").getNodeValue();
-        final String displayName = attrMap.getNamedItem("displayName").getNodeValue();
-
-        //
-        final String cellPackageId = attrMap.getNamedItem("cellPackageId").getNodeValue();
-        final String cellEditorId = attrMap.getNamedItem("cellEditorId").getNodeValue();
-
-        //
-        final String worldPackageId = attrMap.getNamedItem("worldPackageId").getNodeValue();
-        final String worldEditorId = attrMap.getNamedItem("worldEditorId").getNodeValue();
-
-        // Craft the Template from the given information
-        final WorldTemplate worldTemplate = new WorldTemplate(sha1CheckSum, packageID, referenceID, referenceName, displayName);
-
-        // Apply the attributes; its all we need from this
-        worldTemplate.setAttributeMap(attributes);
-
-        // We need to request the world for the template
-        delegate.makePackageRequest(worldPackageId, worldEditorId, worldTemplate);
-
-        // We need to request the map for the template
-        delegate.makePackageRequest(cellPackageId, cellEditorId, worldTemplate);
-
-        // Thats all we need to do
-        return worldTemplate;
+        return room;
     }
 
     public static WorldScript handleWorldScript(ResourceDelegate delegate, File file, Node root) throws Exception {
@@ -437,6 +311,41 @@ public class ResourceMolder {
         return actor;
     }
 
+    public static LightSource handleLightSource(ResourceDelegate delegate, File file, Node root) throws Exception {
+
+        // Value holder
+        final HashMap<String, Object> attributes = handleAttributes(root);
+
+        //
+        final String md5CheckSum = FileUtils.generateChecksum(file.getAbsolutePath(), "SHA-1");
+
+        //
+        final NamedNodeMap attrMap = root.getAttributes();
+
+        // Grab the name of the layer
+        final String packageID = attrMap.getNamedItem("packageID").getNodeValue();
+        final String referenceName = attrMap.getNamedItem("referenceName").getNodeValue();
+        final String referenceID = attrMap.getNamedItem("referenceID").getNodeValue();
+        final String displayName = attrMap.getNamedItem("displayName").getNodeValue();
+        final int angle = Integer.parseInt(attrMap.getNamedItem("angle").getNodeValue());
+        final int x = Integer.parseInt(attrMap.getNamedItem("x").getNodeValue());
+        final int y = Integer.parseInt(attrMap.getNamedItem("y").getNodeValue());
+        final float amps = Float.parseFloat(attrMap.getNamedItem("amps").getNodeValue());
+        final float volts = Float.parseFloat(attrMap.getNamedItem("volts").getNodeValue());
+
+        //
+        final LightSource source = new LightSource(x, y, angle, amps, volts);
+        source.setAttributeMap(attributes);
+        source.setPackageID(packageID);
+        source.setReferenceName(referenceName);
+        source.setDisplayName(displayName);
+        source.setReferenceID(referenceID);
+        source.validate();
+
+        // Return it
+        return source;
+    }
+
     public static WorldItem handleWeapon(ResourceDelegate delegate, File file, Node root) throws Exception {
 
         // Value holder
@@ -567,7 +476,7 @@ public class ResourceMolder {
             final HashMap<String, Object> map = handleAttributes(root);
 
             // We need to generate a checksum for the actual graphic holder(AnimatedSprite, GraphicSet, Background)
-            // not just the graphic that the graphic holder contains
+            // not just the graphic that the graphic holder containsObject
             final String sha1CheckSum = FileUtils.generateChecksum(file.getAbsolutePath(), "SHA-1");
 
             // Grab properties from the graphic
@@ -586,6 +495,14 @@ public class ResourceMolder {
                     final Animation animation = new Animation(sha1CheckSum, packageID, referenceID, referenceName, displayName);
                     animation.setAttributeMap(map);
 
+                    // Collision Node
+                    final Node collision = (Element) getNodeNamed(root, "Collision");
+
+                    //
+                    if (collision != null) {
+                        animation.setWrapper(new CollisionWrapper(handleCollision(collision)));
+                    }
+
                     // Add a resource request for the graphicName of type Image
                     delegate.makePackageRequest(picturePackageID, pictureReferenceID, animation);
 
@@ -599,6 +516,7 @@ public class ResourceMolder {
 
                     // Add a resource request for the graphicName of type Image
                     delegate.makePackageRequest(picturePackageID, pictureReferenceID, tileset);
+                    // System.out.println("Tileset Semi-handled.");
 
                     // Return the tileset
                     return tileset;
@@ -606,8 +524,9 @@ public class ResourceMolder {
 
                     // Couple of extra things to grab here
                     final Boolean bool = Boolean.parseBoolean(String.valueOf(map.get("stretch")));
-                    System.err.println("Value: " + bool);
 
+                    //@DEBUG
+                    // System.err.println("Handling Illustration Value: " + bool);
                     // Create the background from file
                     final Backdrop background = new Backdrop(sha1CheckSum, packageID, referenceID, referenceName, displayName);
                     background.setAttributeMap(map);
@@ -621,10 +540,135 @@ public class ResourceMolder {
             }
         } catch (NullPointerException | ClassCastException cce) {
             // Will soon throw visible error
+            System.err.println(cce);
         }
 
         //
         return null;
+    }
+
+    private static Object[][] handleCollision(Node collision) {
+
+        // The list of nodes.
+        final NodeList indexList = collision.getChildNodes();
+
+        // We use half the indexList's length because it has a ton of elements that aren't element_nodes.
+        final Object[][] output = new Object[indexList.getLength() / 2][5];
+        int v1 = -1;
+
+        // We should be scrolling down Index:[0] - Index[Animation Length]
+        for (int i = 0; i < indexList.getLength(); i++) {
+
+            // Each individual animation index <INDEX val, vcount>
+            final Node indexNode = indexList.item(i);
+            final int indexNodeType = indexNode.getNodeType();
+
+            // ELEMENT_NODE == 1;
+            if (indexNodeType == Node.ELEMENT_NODE) {
+
+                //
+                final NamedNodeMap indexAttr = indexNode.getAttributes();
+
+                //
+                final int pointCount = Integer.parseInt(indexAttr.getNamedItem("pointcount").getNodeValue());
+                final int polyCount = Integer.parseInt(indexAttr.getNamedItem("polycount").getNodeValue());
+                final int precision = Integer.parseInt(indexAttr.getNamedItem("precision").getNodeValue());
+
+                // Grab named node map for attribute vcount
+                final Polygon[] polygons = new Polygon[polyCount];
+                final HashMap<Point, Integer> map = new HashMap(pointCount);
+                final String[] names = new String[polyCount];
+                final double[] mults = new double[polyCount];
+                int polyCounter = 0;
+
+                //
+                v1++;
+
+                // The list of points and polygons
+                final NodeList contentList = indexNode.getChildNodes();
+
+                // Going over each polygon
+                for (int j = 0; j < contentList.getLength(); j++) {
+
+                    // <POLYGON mult, name>
+                    final Node contentNode = contentList.item(j);
+                    final String contentNodeName = contentNode.getNodeName();
+                    final int contentNodeType = contentNode.getNodeType();
+
+                    // Again must be an element node.
+                    if (contentNodeType == Node.ELEMENT_NODE) {
+
+                        // If it's a point process is differently.
+                        if (contentNode.getNodeName().equals("Point")) {
+
+                            // Grab the name of the polygon region and the multiplier
+                            final NamedNodeMap pointAttr = contentNode.getAttributes();
+
+                            //
+                            final int x = Integer.parseInt(pointAttr.getNamedItem("x").getNodeValue());
+                            final int y = Integer.parseInt(pointAttr.getNamedItem("y").getNodeValue());
+                            final int type = Integer.parseInt(pointAttr.getNamedItem("type").getNodeValue());
+
+                            // Add to polygon
+                            map.put(new Point(x, y), type);
+                        } else if (contentNodeName.equals("Polygon")) {
+
+                            //
+                            if (contentNode.hasChildNodes()) {
+
+                                // Grab Coord Element
+                                final NodeList polygonList = contentNode.getChildNodes();
+                                final NamedNodeMap polygonAttr = contentNode.getAttributes();
+
+                                //
+                                final String name = polygonAttr.getNamedItem("name").getNodeValue();
+                                final double mult = Double.parseDouble(polygonAttr.getNamedItem("mult").getNodeValue());
+
+                                //
+                                final Polygon poly = new Polygon();
+
+                                //
+                                for (int k = 0; k < polygonList.getLength(); k++) {
+
+                                    // Coord Node
+                                    final Node coordElement = (Node) polygonList.item(k);
+
+                                    //
+                                    if (coordElement.getNodeType() == Node.ELEMENT_NODE) {
+
+                                        //
+                                        final NamedNodeMap attr = coordElement.getAttributes();
+                                        final int x = Integer.parseInt(attr.getNamedItem("x").getNodeValue());
+                                        final int y = Integer.parseInt(attr.getNamedItem("y").getNodeValue());
+
+                                        //
+                                        poly.addPoint(x, y);
+                                    }
+                                }
+
+                                // Add polygon to list.
+                                polygons[polyCounter] = poly;
+                                names[polyCounter] = name;
+                                mults[polyCounter] = mult;
+
+                                //
+                                polyCounter++;
+                            }
+                        }
+                    }
+                }
+
+                //
+                output[v1][0] = polygons;
+                output[v1][1] = map;
+                output[v1][2] = names;
+                output[v1][3] = mults;
+                output[v1][4] = precision;
+            }
+        }
+
+        //
+        return output;
     }
 
     private static HashMap<String, Object> handleAttributes(Node root) {
@@ -684,6 +728,10 @@ public class ResourceMolder {
 
     private static Node getNodeNamed(Node node, String search) {
 
+        if (node == null || node.getChildNodes() == null) {
+            return null;
+        }
+
         // Grab node list
         final NodeList nodeList = node.getChildNodes();
 
@@ -705,7 +753,7 @@ public class ResourceMolder {
         return null;
     }
 
-    private static void parseScenicObject(ResourceDelegate delegate, WorldCell worldCell, Node node) {
+    private static void parseScenicObject(ResourceDelegate delegate, Room worldCell, Node node) {
 
         // Grab the attributes for this xml element
         final NamedNodeMap attributes = node.getAttributes();
@@ -716,7 +764,7 @@ public class ResourceMolder {
         final String referenceID = attributes.getNamedItem("referenceID").getNodeValue();
 
         // Depends on the status of the packageID
-        if (packageID.isEmpty()) {
+        if (packageID.isEmpty() || packageID.equals("null")) {
 
             // Request from loose files
             delegate.makeRequest(referenceID, worldCell);
@@ -727,7 +775,7 @@ public class ResourceMolder {
         }
     }
 
-    private static void parseWorldObject(ResourceDelegate delegate, WorldCellLayer worldCellLayer, Node node) {
+    private static void parseWorldObject(ResourceDelegate delegate, RoomLayer layer, Node node) {
 
         // Value holder
         final HashMap<String, Object> map = handleAttributes(node);
@@ -745,68 +793,51 @@ public class ResourceMolder {
         final int y = Integer.parseInt(attributes.getNamedItem("y").getNodeValue());
 
         // Initially null as we switch over class name given
-        WorldTile value = null;
-
         // Support for Tiles
         if (nodeName.equalsIgnoreCase("WorldTile")) {
-
-            //
-            System.out.println("World Tile found.");
 
             // Extract raw
             final int index = Integer.parseInt(attributes.getNamedItem("index").getNodeValue());
             final float rotation = Float.parseFloat(attributes.getNamedItem("rotation").getNodeValue());
 
             // Special case for tiles
-            value = new WorldTile(index);
-
-            // Properties to set
-            value.setRotation(rotation);
-        }
-
-        // Must have solved for the class name to continue
-        if (value != null) {
+            WorldTile tile = new WorldTile(index);
 
             // Editor and Map information
-            value.setAttributeMap(map);
-            value.setX(x);
-            value.setY(y);
-            value.setReferenceID(referenceID);
-            value.setDisplayName(displayName);
-            value.setReferenceName(referenceName);
-            value.setPackageId(packageID);
+            tile.setAttributeMap(map);
+            tile.setX(x);
+            tile.setY(y);
+            tile.setReferenceID(referenceID);
+            tile.setDisplayName(displayName);
+            tile.setReferenceName(referenceName);
+            tile.setPackageID(packageID);
+
+            // Properties to set
+            tile.setRotation(rotation);
 
             // !TILE REQUESTING GRAPHICSET
-            if (packageID.isEmpty()) {
-
-                //
-                System.err.println("Loose request made.");
+            // The Tile's reference ID is the same as it's graphics set's always so the request will
+            // find the graphicset by the referenceId and send it to the Tile.
+            if (packageID == null || packageID.isEmpty() || packageID.equals("null")) {
 
                 // Requesting a resource that is not associated with any data package
-                delegate.makeRequest(referenceID, value);
+                delegate.makeRequest(referenceID, tile);
             } else {
-
-                //
-                System.out.println("Package Request made.");
 
                 // Requesting a resource that is associated with a data package
-                delegate.makePackageRequest(referenceID, referenceName, value);
+                delegate.makePackageRequest(referenceID, referenceName, tile);
             }
 
-            // Tiles are added manually; while other world objects are sent as resources via the recieve method
-            worldCellLayer.add(value);
+            //
+            layer.addObject(tile, new Point(x, y));
+        } else if (packageID == null || packageID.isEmpty() || packageID.equals("null")) {
+
+            // Request from loose files
+            delegate.makeReferenceRequest(referenceID, layer, map);
         } else {
 
-            // Depends on the status of the packageID
-            if (packageID.isEmpty()) {
-
-                // Request from loose files
-                delegate.makeReferenceRequest(referenceID, worldCellLayer, map);
-            } else {
-
-                // Wait for all resources to load then allocate the fMap to the world.
-                delegate.makePackageRequest(packageID, referenceID, worldCellLayer);
-            }
+            // Wait for all resources to load then allocate the resource.
+            delegate.makePackageRequest(packageID, referenceID, layer);
         }
     }
 }

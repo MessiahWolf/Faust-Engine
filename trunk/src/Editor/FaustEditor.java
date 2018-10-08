@@ -27,10 +27,8 @@ import Editor.form.TileSelector;
 import Editor.form.TilesetManager;
 import Editor.form.UtilityToolbar;
 import Editor.form.WorkspaceTabComponent;
-import Editor.form.WorldCanvas;
-import Editor.form.WorldCellSelector;
-import Editor.form.WorldManager;
-import core.world.World;
+import Editor.form.RoomCanvas;
+import Editor.form.RoomManager;
 import io.resource.ResourceDelegate;
 import io.resource.ResourceProducer;
 import java.awt.AWTException;
@@ -62,6 +60,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import Editor.tools.Grid;
+import core.world.Backdrop;
+import core.world.Room;
+import core.world.WorldObject;
+import core.world.WorldTile;
 
 /**
  *
@@ -87,15 +89,13 @@ public class FaustEditor extends JFrame {
     private ResourceDelegate delegate;
     private ResourceManager resourceManager;
     private StatusBar statusBar;
-    private WorldCellSelector mapSelector;
     private TileSelector tileSelector;
-    private WorldCanvas worldCanvas;
-    private WorldManager worldManager;
+    private RoomCanvas roomCanvas;
+    private RoomManager roomManager;
     private TilesetManager tilesetManager;
     // End of Variable Declaration
 
     public static void main(String[] args) {
-
         // Initialize the editor.
         final FaustEditor faustEditor = new FaustEditor();
 
@@ -106,7 +106,7 @@ public class FaustEditor extends JFrame {
     public FaustEditor() {
 
         // JFrame Constructor for settings the title.
-        super("Faust Map Editor");
+        super("Grow Garden Simulator");
 
         // Attempt to set the look and feel of the application
         try {
@@ -120,10 +120,8 @@ public class FaustEditor extends JFrame {
 
         // Load the property File
         loadPropertyFile();
-
         // Initialize GUI
         initComponents();
-
         // Custom Initialization
         initCustomComponents();
     }
@@ -137,23 +135,22 @@ public class FaustEditor extends JFrame {
         delegate = new ResourceDelegate();
 
         // Preserve Inst. Order
-        tileSelector = new TileSelector();
-        mapSelector = new WorldCellSelector(this, delegate);
+        roomCanvas = new RoomCanvas(this);
+        fileSelector = new FileToolbar(this, delegate, roomCanvas);
 
         // Preserve Inst. Order
-        worldCanvas = new WorldCanvas(this, delegate, mapSelector, null);
-        fileSelector = new FileToolbar(this, delegate, worldCanvas);
+        tileSelector = new TileSelector(roomCanvas);
 
         //
-        worldCanvas.connect(fileSelector);
+        roomCanvas.connect(fileSelector);
 
         // Preserve Inst. Order
         toolSelector = new UtilityToolbar(this, delegate);
 
         // Managers
         resourceManager = new ResourceManager(this, delegate);
-        tilesetManager = new TilesetManager(this, tileSelector, delegate);
-        worldManager = new WorldManager(delegate);
+        tilesetManager = new TilesetManager(this, delegate);
+        roomManager = new RoomManager(delegate);
 
         //
         statusBar = new StatusBar(this, delegate);
@@ -183,23 +180,23 @@ public class FaustEditor extends JFrame {
         setSize(editorDimension);
 
         //
-        renderPane.setViewportView(worldCanvas);
-        tilesetManager.setWorldCanvas(worldCanvas);
+        renderPane.setViewportView(roomCanvas);
 
         //
         resourceSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, mainTabbedPane);
         worldSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, renderPane, null);
         worldSplitPane.setOneTouchExpandable(false);
+        worldSplitPane.setResizeWeight(1f);
         worldSplitPane.setEnabled(false);
 
         // Begin to add them to This Frame
         mainTabbedPane.addTab("Resource Palette", resourceManager);
         mainTabbedPane.addTab("Tileset Palette", tilesetManager);
-        mainTabbedPane.addTab("World View", worldManager);
+        mainTabbedPane.addTab("World View", roomManager);
 
         //
         workspacePane.addTab("0", worldSplitPane);
-        workspacePane.setTabComponentAt(0, new WorkspaceTabComponent(workspacePane, "Workspace 1"));
+        workspacePane.setTabComponentAt(0, new WorkspaceTabComponent(this, workspacePane, "Workspace 1"));
 
         //
         final JPanel buttonJPanel = new JPanel();
@@ -210,7 +207,7 @@ public class FaustEditor extends JFrame {
         buttonJPanel.add(toolSelector);
 
         // Default Disabled
-        worldManager.setEnabled(false);
+        roomManager.setEnabled(false);
 
         // Piecing together
         add(buttonJPanel, BorderLayout.NORTH);
@@ -241,8 +238,8 @@ public class FaustEditor extends JFrame {
                         if (worldSplitPane != null) {
 
                             // The resize weight will allow the component to maintain reasonable size after maximization.
-                            worldSplitPane.setResizeWeight(1);
-                            worldSplitPane.setDividerLocation(.88f);
+                            //worldSplitPane.setResizeWeight(1);
+                            //worldSplitPane.setDividerLocation(.88f);
                         }
                     }
                 }
@@ -272,28 +269,23 @@ public class FaustEditor extends JFrame {
         setIconImages(list);
     }
 
-    public void update(World world) {
-
-        // fMap Canvas listens to fMap: Avoid loop
-        if (worldCanvas.getWorld() != world) {
-            worldCanvas.setWorld(world);
-        }
+    public void update() {
 
         // Revalidate the worldCanvas to show the new map associated
-        worldCanvas.revalidate();
+        roomCanvas.revalidate();
 
         // Adjusting the ScrollPane to hold the fMap
         renderPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         renderPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        renderPane.setViewportView(worldCanvas);
+        renderPane.setViewportView(roomCanvas);
         renderPane.revalidate();
 
         // Give the graphic manager a world canvas
-        tilesetManager.setWorldCanvas(worldCanvas);
+        tileSelector.getComponent();
+        revalidate();
 
         // Default Disabled
-        worldManager.update(world);
-        worldManager.setEnabled(true);
+        roomManager.setEnabled(true);
     }
 
     private void repositionCenter() {
@@ -325,8 +317,8 @@ public class FaustEditor extends JFrame {
         // Validate all temporary files
         delegate.validateTemporary();
 
-        // Will save all worlds
-        delegate.validateWorld(worldCanvas.getWorld());
+        //
+        delegate.validateRooms();
 
         // Save all the plugins; the plugins keep a record of all the changes
         delegate.validatePackages();
@@ -436,8 +428,16 @@ public class FaustEditor extends JFrame {
         return dataDirectory;
     }
 
-    public WorldCanvas getCanvas() {
-        return worldCanvas;
+    public RoomCanvas getCanvas() {
+        return roomCanvas;
+    }
+    
+    public ResourceDelegate getDelegate() {
+        return delegate;
+    }
+
+    public RoomManager getManager() {
+        return roomManager;
     }
 
     public JSplitPane getResourceSplitPane() {
@@ -446,6 +446,10 @@ public class FaustEditor extends JFrame {
 
     public JSplitPane getWorldSplitPane() {
         return worldSplitPane;
+    }
+
+    public TileSelector getTileSelector() {
+        return tileSelector;
     }
 
     /**
@@ -476,7 +480,7 @@ public class FaustEditor extends JFrame {
         gridJCheckBox = new javax.swing.JCheckBoxMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Faust Map Editor");
+        setTitle("Grow Garden Simulator");
         setMinimumSize(new java.awt.Dimension(360, 188));
         setName("mainFrame"); // NOI18N
 
@@ -627,7 +631,7 @@ public class FaustEditor extends JFrame {
         } else if (delegate.getScanMode() == ResourceDelegate.SCAN_UNBIASED) {
 
             // Add all files unbiased
-            delegate.performScan(dataDirectory, true, loadPackages);
+            delegate.performScan(dataDirectory, loadPackages);
             delegate.validate();
         }
     }//GEN-LAST:event_dataJMenuItemActionPerformed
@@ -646,21 +650,45 @@ public class FaustEditor extends JFrame {
 
     private void visibleTileJCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_visibleTileJCheckBoxItemStateChanged
         // Base Cas
+        if (roomCanvas != null) {
+
+            //
+            final Room room = roomCanvas.getMap();
+
+            for (WorldObject obj : room.filter(WorldTile.class)) {
+                obj.setVisible(visibleTileJCheckBox.isSelected());
+            }
+
+            //
+            roomCanvas.repaint();
+        }
     }//GEN-LAST:event_visibleTileJCheckBoxItemStateChanged
 
     private void visibleEffectJCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_visibleEffectJCheckBoxItemStateChanged
     }//GEN-LAST:event_visibleEffectJCheckBoxItemStateChanged
 
     private void visibleBackgroundJCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_visibleBackgroundJCheckBoxItemStateChanged
+        if (roomCanvas != null) {
+
+            //
+            final Room room = roomCanvas.getMap();
+
+            for (Backdrop b : room.getBackgroundList()) {
+                b.setVisible(visibleBackgroundJCheckBox.isSelected());
+            }
+
+            //
+            roomCanvas.repaint();
+        }
     }//GEN-LAST:event_visibleBackgroundJCheckBoxItemStateChanged
 
     private void gridJCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_gridJCheckBoxItemStateChanged
 
         // World Canvas must exist
-        if (worldCanvas != null) {
+        if (roomCanvas != null) {
 
             // Quickly grab the grid as reference
-            final Grid grid = worldCanvas.getGrid();
+            final Grid grid = roomCanvas.getGrid();
 
             // World Canvas's Grid must exist
             if (grid != null) {
@@ -672,7 +700,7 @@ public class FaustEditor extends JFrame {
                 grid.setVisible(!state);
 
                 // Repaint
-                worldCanvas.repaint();
+                roomCanvas.repaint();
             }
         }
     }//GEN-LAST:event_gridJCheckBoxItemStateChanged
@@ -691,7 +719,7 @@ public class FaustEditor extends JFrame {
     private void saveWorldJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveWorldJMenuItemActionPerformed
 
         // Saves every world it can find; this also resaves all the world cells associated with the world instance.
-        delegate.validateWorlds();
+        save();
     }//GEN-LAST:event_saveWorldJMenuItemActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem dataJMenuItem;

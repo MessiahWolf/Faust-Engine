@@ -26,21 +26,16 @@ import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.ImageFilter;
 import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
-import java.awt.image.RGBImageFilter;
 import java.awt.image.RasterFormatException;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import sun.awt.image.ToolkitImage;
 
 /**
  *
@@ -65,7 +60,7 @@ public class ResourceProducer {
 
         // Try to force it this way
         if (imageWidth <= 0 || imageHeight <= 0) {
-            ImageIcon icon = new ImageIcon(image);
+            final ImageIcon icon = new ImageIcon(image);
             imageWidth = icon.getIconWidth();
             imageHeight = icon.getIconHeight();
         }
@@ -84,7 +79,7 @@ public class ResourceProducer {
         return bufferedImage;
     }
 
-    public static boolean challengeImage(Image image, ImageObserver obs) {
+    public static boolean isEmpty(Image image, ImageObserver obs) {
 
         // Buffer it so that we can read the bytes
         final BufferedImage buffered = bufferImage(image, obs);
@@ -110,34 +105,16 @@ public class ResourceProducer {
         return true;
     }
 
-    public static Image createImage(byte[] byteStream) {
-
-        // Recreate the Image from the stream of bytes.
-        Image falseImage = Toolkit.getDefaultToolkit().createImage(byteStream);
-
-        // Cheap way of getting around the false image thing -- Forces it to load
-        falseImage = new ImageIcon(falseImage).getImage();
+    public static BufferedImage createImage(byte[] byteStream) throws IOException {
 
         //
-        return falseImage;
+        return ImageIO.read(new ByteArrayInputStream(byteStream));
     }
 
     public static BufferedImage[] createImages(Picture resource, HashMap<String, Object> map) {
 
         //
-        Image image = resource.getImage();
-
-        // Check first
-        if (image instanceof ToolkitImage) {
-            image = bufferImage(image, null);
-        }
-
-        // Create a new set of rectangles
-        final ArrayList<Rectangle> rectangles = new ArrayList<>();
-
-        //
-        int imageWidth = image.getWidth(null);
-        int imageHeight = image.getHeight(null);
+        final BufferedImage image = bufferImage(resource.getImage(), null);
 
         // Grab from the hashmap
         int blockWidth = Integer.parseInt(String.valueOf(map.get("blockWidth")));
@@ -149,135 +126,62 @@ public class ResourceProducer {
         int blockHGap = Integer.parseInt(String.valueOf(map.get("blockHGap")));
         int blockVGap = Integer.parseInt(String.valueOf(map.get("blockVGap")));
 
+        //
+        final BufferedImage[] bufferedImages = new BufferedImage[blockRows * blockColumns];
+
+        //
+        int count = -1;
+
         // Create boxes to represent the cuts applied to the Image to create the Tileset or Animation
         for (int row = 0; row < blockRows; row++) {
 
             //
             for (int column = 0; column < blockColumns; column++) {
 
-                // Create a new Rectangle
-                final Rectangle rectangle = new Rectangle(blockXOffset + (row * (blockWidth + blockHGap)), blockYOffset + (column * (blockHeight + blockVGap)), blockWidth, blockHeight);
+                // Quick check
+                final int x = blockXOffset + (column * (blockWidth + blockHGap));
+                final int y = blockYOffset + (row * (blockHeight + blockVGap));
 
-                // Add to the Rectangle Collection
-                rectangles.add(rectangle);
-            }
-        }
+                // Creating a new array of pixels.
+                final BufferedImage subImage = new BufferedImage(blockWidth, blockHeight, BufferedImage.TYPE_INT_ARGB);
 
-        //
-        final BufferedImage[] bufferedImages = new BufferedImage[rectangles.size()];
+                // Create a Raster of Data to be Manipulated
+                final Graphics2D manet = subImage.createGraphics();
 
-        // Fill the Image array with splitted image parts
-        for (int i = 0; i < rectangles.size(); i++) {
+                //
+                try {
 
-            //
-            final Rectangle rectangle = rectangles.get(i);
+                    // @RasterFormatException
+                    // Draw the specific Rectangle of the Tileset
+                    manet.drawImage(image.getSubimage(x, y, blockWidth, blockHeight), 0, 0, null);
+                    count++;
+                } catch (RasterFormatException rfe) {
+                    
+                    // Precheck
+                    if (y >= image.getHeight() || x >= image.getWidth()) {
+                        return null;
+                    }                    
 
-            // Creating a new array of pixels.
-            final BufferedImage newImage = new BufferedImage(blockWidth, blockHeight, BufferedImage.TYPE_INT_ARGB);
-            final BufferedImage blockImage = (BufferedImage) image;
-
-            // Create a Raster of Data to be Manipulated
-            Graphics2D manet = newImage.createGraphics();
-
-            //
-            try {
-
-                // @RasterFormatException
-                // Draw the specific Rectangle of the Tileset
-                manet.drawImage(blockImage.getSubimage(rectangle.x, rectangle.y, rectangle.width, rectangle.height), 0, 0, null);
-            } catch (RasterFormatException rfe) {
-
-                // So normall would be oob
-                if ((rectangle.x + rectangle.width) > imageWidth || (rectangle.y + rectangle.height) > imageHeight) {
-
-                    // This would then be the result
-                    manet.drawImage(blockImage.getSubimage(blockXOffset, blockYOffset, rectangle.width - blockXOffset, rectangle.height - blockYOffset), 0, 0, null);
+                    if (y + blockHeight > image.getHeight() && x + blockWidth <= image.getWidth()) {
+                        manet.drawImage(image.getSubimage(x, y, blockWidth, blockHeight - blockYOffset), 0, 0, null);
+                        count++;
+                    } else {
+                        //
+                        count++;
+                        continue;
+                    }
                 }
+
+                // Free the memory this object holds.
+                manet.dispose();
+
+                // Add to collection
+                bufferedImages[count] = subImage;
             }
-
-            // Free the memory this object holds.
-            manet.dispose();
-
-            // Add to collection
-            bufferedImages[i] = newImage;
         }
 
         //
         return bufferedImages;
-    }
-
-    public static void displayShape(String newTitle, Shape newShape) {
-
-        //
-        int shapeWidth = newShape.getBounds().width;
-        int shapeHeight = newShape.getBounds().height;
-
-        // Mock Image
-        BufferedImage bufferedImage = new BufferedImage(shapeWidth, shapeHeight, BufferedImage.TYPE_INT_ARGB);
-
-        // Create Graphics from this new Image Canvas
-        Graphics monet = bufferedImage.createGraphics();
-
-        // Cast to 2D Graphics
-        Graphics2D manet = (Graphics2D) monet;
-
-        // Adjust the Graphics Context
-        manet.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // Set the color
-        manet.setColor(Color.BLUE);
-
-        // Draw the shape
-        manet.fill(newShape);
-
-        // Dispose of this graphics objects
-        manet.dispose();
-    }
-
-    public static void displayPoint(Point[] newPoints, int imageWidth, int imageHeight) {
-
-        BufferedImage newImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
-
-        //
-        int gridWidth = 16;
-        int gridHeight = 16;
-        int gridRows = newImage.getWidth() / gridWidth;
-        int gridColumns = newImage.getHeight() / gridHeight;
-
-        //
-        Graphics2D manet = newImage.createGraphics();
-
-        //
-        manet.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        //
-        for (int i = 0; i < gridRows; i++) {
-            for (int j = 0; j < gridColumns; j++) {
-
-                // new Rectangle
-                Rectangle newRect = new Rectangle(i * gridWidth, j * gridHeight, gridWidth, gridHeight);
-
-                // Draw it
-                manet.setColor(Color.WHITE);
-                manet.fill(newRect);
-                manet.setColor(Color.BLACK);
-                manet.draw(newRect);
-            }
-        }
-
-        manet.draw(new Rectangle(0, 0, imageWidth, imageHeight));
-
-        for (int i = 0; i < newPoints.length; i++) {
-            Point newPoint = newPoints[i];
-            //
-            Ellipse2D.Double newEllipse = new Ellipse2D.Double(newPoint.x, newPoint.y, 1, 1);
-
-            // Plot the point
-            manet.setColor(Color.RED);
-            manet.fill(newEllipse);
-        }
-        //
-        manet.dispose();
     }
 
     public static BufferedImage mirrorHorizontal(BufferedImage newImage) {
@@ -367,75 +271,11 @@ public class ResourceProducer {
         return newFile;
     }
 
-    public static BufferedImage changeColor(BufferedImage refImage, Color oldColor, Color newColor) {
-
-        // Create a shadow copy
-        BufferedImage newImage = refImage;
-
-        // Determine which bits we need
-        for (int rowPixel = 0; rowPixel < newImage.getWidth(); rowPixel++) {
-            for (int columnPixel = 0; columnPixel < newImage.getHeight(); columnPixel++) {
-
-                // Short all the way past the red pixels over to the alpha pixels
-                int rgb = newImage.getRGB(rowPixel, columnPixel);
-                if (rgb == oldColor.getRGB()) {
-                    newImage.setRGB(rowPixel, columnPixel, newColor.getRGB());
-                }
-            }
-        }
-
-        return newImage;
-    }
-
-    public static Image makeColorTransparent(BufferedImage im, final Color color) {
-        ImageFilter filter;
-        filter = new RGBImageFilter() {
-            // the color we are looking for... Alpha bits are set to opaque
-            public int markerRGB = color.getRGB() | 0xFF000000;
-
-            @Override
-            public final int filterRGB(int x, int y, int rgb) {
-                if ((rgb | 0xFF000000) == markerRGB) {
-                    // Mark the alpha bits as zero - transparent
-                    return 0x00FFFFFF & rgb;
-                } else {
-                    // nothing to do
-                    return rgb;
-                }
-            }
-        };
-
-        ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
-        return Toolkit.getDefaultToolkit().createImage(ip);
-    }
-
-    public static BufferedImage setTransparentPixels(BufferedImage refImage, int newColor) {
-
-        // Create a shadow copy
-        BufferedImage newImage = refImage;
-
-        for (int rowPixel = 0; rowPixel < newImage.getWidth(); rowPixel++) {
-            for (int columnPixel = 0; columnPixel < newImage.getHeight(); columnPixel++) {
-
-                // Shift all the way of past the red pixels to the alpha pixels
-                if (isTransparent(newImage.getRGB(rowPixel, columnPixel), 0)) {
-                    // Since we have
-                    newImage.setRGB(rowPixel, columnPixel, newColor);
-                }
-            }
-        }
-
-        return newImage;
-    }
-
     public static boolean isTransparent(int testPixel, int lean) {
-        if (((testPixel >> 24) & 0xFF) <= lean) {
-            // This pixel is completely transparent
-            return true;
-        }
 
-        // Its not completely transparent
-        return false;
+        // This pixel is completely transparent;
+        // Took a lot of research when I was 16 to figure this solution out.
+        return ((testPixel >> 24) & 0xFF) <= lean;
     }
 
     @SuppressWarnings("SleepWhileInLoop")
@@ -520,7 +360,7 @@ public class ResourceProducer {
         // Draw onto the canvas
         for (int i = 1; i < colors.length + 1; i++) {
             prop = (float) ((i * 360.0f) / colors.length);
-            //System.out.println(prop);
+            //// System.out.println(prop);
 
             Arc2D.Float newArc = new Arc2D.Float(gapX, gapY, sizeW - (2 * gapX), sizeH - (2 * gapY), prop, 360.0f / i, Arc2D.PIE);
 

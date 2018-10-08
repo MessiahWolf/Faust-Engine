@@ -19,7 +19,7 @@
  */
 package io.resource;
 
-import core.world.WorldTemplate;
+import core.world.LightSource;
 import core.world.WorldResource;
 import core.event.DelegateEvent;
 import core.event.DelegateListener;
@@ -27,9 +27,8 @@ import core.world.Actor;
 import core.world.Animation;
 import core.world.Picture;
 import core.world.Backdrop;
-import core.world.WorldCellLayer;
-import core.world.WorldCell;
-import core.world.World;
+import core.world.RoomLayer;
+import core.world.Room;
 import core.world.Tileset;
 import core.world.WorldEffect;
 import core.world.WorldItem;
@@ -75,7 +74,7 @@ public class ResourceDelegate {
     private String animationDirectory;
     private String cellDirectory;
     private String worldDirectory;
-    private String templateDirectory;
+    private String lightDirectory;
     private String scriptDirectory;
     private String pictureFolder;
     public static final String UNPACKAGED_STATEMENT = "No Association";
@@ -208,6 +207,8 @@ public class ResourceDelegate {
             prefix = "WE";
         } else if (closs == WorldItem.class) {
             prefix = "WI";
+        } else if (closs == LightSource.class) {
+            prefix = "LS";
         } else {
             prefix = "UK";
         }
@@ -329,12 +330,15 @@ public class ResourceDelegate {
         // Object parsed from the file
         WorldResource resource = null;
 
+        //
+        // System.out.println("Attempt File: " + file.getAbsolutePath());
         try {
 
             // Attempt a read
             resource = ResourceReader.read(this, file);
         } catch (Exception ioe) {
-            System.err.println("Error creating citation for resource: " + ioe);
+            System.err.println("Error creating citation for resource: " + ioe
+                    + " File(" + file.getAbsolutePath() + ")");
         }
 
         if (resource == null) {
@@ -369,7 +373,7 @@ public class ResourceDelegate {
         }
     }
 
-    public void performScan(String dataFolder, boolean add, boolean acceptDataPackages) {
+    public void performScan(String dataFolder, boolean acceptDataPackages) {
 
         // This is the location of the static Data Folder for Faust Files
         this.dataDirectory = dataFolder;
@@ -383,19 +387,16 @@ public class ResourceDelegate {
 
             // Create the directory structure if non-existent
             makeStructure();
+            // !-Recursion; to scan subfolders for accepted resources
+            performScan(dataFile, acceptDataPackages);
 
-            if (add) {
+            // Aftercheck
+            if (referenceList.isEmpty() && packageList.isEmpty()) {
 
-                // !-Recursion; to scan subfolders for accepted resources
-                performScan(dataFile, acceptDataPackages);
-
-                // Aftercheck
-                if (referenceList.isEmpty() && packageList.isEmpty()) {
-
-                    // Show a failed to find resources message
-                    JOptionPane.showMessageDialog(null, "Failed to find any resources.");
-                }
+                // Show a failed to find resources message
+                JOptionPane.showMessageDialog(null, "Failed to find any resources.");
             }
+
         } else {
 
             // Attempt to create the directory structure if it failed to find the base data folder.
@@ -403,19 +404,8 @@ public class ResourceDelegate {
 
             // Exit the application if we failed to locate the Data Folder; may soon show a file window to allow user to locate the directory.
             //JOptionPane.showMessageDialog(null, "Could not find the Faust Resource directory\nProgram Exitting...");
-
             // Exit the application
             //System.exit(0);
-        }
-
-        // We added resources :D
-        if (add) {
-
-            // Resource have been loaded
-            resourcesLoaded = true;
-
-            // Fire the event for all resources loaded in Data Folder
-            fireEventNotifier(referenceList, DelegateEvent.FINISHED);
         }
     }
 
@@ -438,11 +428,9 @@ public class ResourceDelegate {
 
                 // Check if this file is of an accepted type
                 if (isResourceExtension(extension)) {
-
                     // Creates a resource for this file and closes handles afterwards
                     makeReference(current);
                 } else if (isPackageExtension(extension)) {
-
                     // If you chose to accept data packages during the search
                     if (acceptDataPackages) {
 
@@ -504,13 +492,13 @@ public class ResourceDelegate {
                 backdropDirectory = cacheDirectory + File.separator + "backdrop";
                 worldDirectory = cacheDirectory + File.separator + "world";
                 cellDirectory = cacheDirectory + File.separator + "worldcell";
-                templateDirectory = cacheDirectory + File.separator + "template";
+                lightDirectory = cacheDirectory + File.separator + "template";
                 scriptDirectory = cacheDirectory + File.separator + "script";
                 pictureFolder = cacheDirectory + File.separator + "pictures";
 
                 // Array of folders
                 final String[] folderArray = {actorDirectory, itemDirectory, animationDirectory, tilesetDirectory, backdropDirectory,
-                    worldDirectory, cellDirectory, templateDirectory, scriptDirectory, pictureFolder};
+                    worldDirectory, cellDirectory, lightDirectory, scriptDirectory, pictureFolder};
 
                 // Iterate
                 for (int i = 0; i < folderArray.length; i++) {
@@ -629,7 +617,7 @@ public class ResourceDelegate {
         }
 
         // Iterate over loose references
-        for (DataRef looseReference : referenceList){
+        for (DataRef looseReference : referenceList) {
             // The event notifier will tell the visual components to emtpy their collections of resources
             fireEventNotifier(looseReference, DelegateEvent.REFERENCE_REMOVED);
         }
@@ -638,6 +626,7 @@ public class ResourceDelegate {
         packageList.clear();
         referenceList.clear();
 
+        //
         // No resources are loaded now
         resourcesLoaded = false;
     }
@@ -645,8 +634,11 @@ public class ResourceDelegate {
     public void validate() {
 
         // If I had a better way It would be here. So deal with this or change it yourself, also respect the load order please.  :(
-
         // ! FImages are loaded by default inside of Data Packages and in the temp folder
+        
+        // Load Light sources
+        loadRequestType(LightSource.class);
+        
         // Base resources
         loadRequestType(Tileset.class);
         loadRequestType(Animation.class);
@@ -661,12 +653,14 @@ public class ResourceDelegate {
         loadRequestType(Actor.class);
 
         // World Types
-        loadRequestType(WorldCellLayer.class);
-        loadRequestType(WorldCell.class);
-        loadRequestType(World.class);
+        loadRequestType(RoomLayer.class);
+        loadRequestType(Room.class);
 
-        // Templates Last
-        loadRequestType(WorldTemplate.class);
+        //
+        resourcesLoaded = true;
+
+        // Fire the event for all resources loaded in Data Folder
+        fireEventNotifier(referenceList, DelegateEvent.FINISHED);
     }
 
     public WorldResource loadExternalResource(File file) {
@@ -750,7 +744,7 @@ public class ResourceDelegate {
                             }
 
                             // Must not have a valid pluginid to be tagged as loose
-                            if (resource.getPackageId().isEmpty()) {
+                            if (resource.getPackageID().isEmpty()) {
 
                                 // I Fixed a major performance issue with the creation of animations. Do not start an empty animaton with negative one repeat cycles and zero delay.
                                 // Add the loose resource
@@ -835,11 +829,13 @@ public class ResourceDelegate {
 
             // Meep.
             if (target.getClass() == closs || closs.isAssignableFrom(target.getClass())) {
-
                 // Iterate over the list of requests and fill them all
                 fillRequest(map.getKey());
             }
         }
+
+        //
+        // System.out.println("All Requests filled for type: " + closs.getSimpleName());
     }
 
     public void logChange(int flag, WorldResource resource) {
@@ -850,85 +846,57 @@ public class ResourceDelegate {
         temporaryQueue.adjustTempFolder(this);
     }
 
-    public void validateWorlds() {
+    public void validateRooms() {
 
-        // Grab all the Worlds currently loaded
-        final World[] worlds = (World[]) this.getType(World.class);
+        //
+        for (Room room : getAllRooms()) {
 
-        // Iterate over the collection of world instances
-        for (World world : worlds) {
-            // Validate the world
-            validateWorld(world);
-        }
-    }
+            // Grab packageID to determine data package
+            final String packageID = room.getPackageID();
 
-    public void validateWorld(World world) {
+            // No data package? PackageID could be "null" because of how file attributes are written out in xml.
+            if (packageID.isEmpty() || packageID.equalsIgnoreCase("null")) {
 
-        // Grab packageID to determine data package
-        final String packageID = world.getPackageId();
+                // Create a File Search object
+                final FileSearch search = new FileSearch(new File(dataDirectory), room.getReferenceName(), true);
 
-        // No data package?
-        if (packageID.isEmpty()) {
+                // Perform the search to populate the list
+                search.perform();
 
-            // Create a File Search object
-            final FileSearch search = new FileSearch(new File(dataDirectory), world.getReferenceName(), true);
-
-            // Perform the search to populate the list
-            search.perform();
-
-            // Make sure the file doesn't already exist
-            final File found = search.check(world.getSHA1CheckSum());
-
-            //
-            if (found != null) {
+                // Make sure the file doesn't already exist
+                final File found = search.check(room.getSHA1CheckSum());
 
                 //
-                if (found.exists()) {
-                    try {
+                if (found != null) {
 
-                        // Delete previous
-                        FileUtils.eraseFile(found);
-                    } catch (IOException ioe) {
-                        //
+                    //
+                    if (found.exists()) {
+                        try {
+
+                            // Delete previous
+                            FileUtils.eraseFile(found);
+                        } catch (IOException ioe) {
+                            //
+                            System.out.println("FILE ERASE FAILED: " + found.getAbsolutePath());
+                        }
                     }
                 }
-            }
 
-            // Save the world to temp
-            ResourceWriter.write(this, world);
+                // Save the world to temp
+                ResourceWriter.write(this, room);
+            } else {
 
-            // rewrite all the maps as well
-            final ArrayList<WorldCell> cellList = world.getCellList();
-
-            // Iterate over the worlds collection of cells
-            for (WorldCell worldCell : cellList) {
-                // Write the cell out; overwrite if nessecary
-                ResourceWriter.write(this, worldCell);
-            }
-        } else {
-
-            // Find its data package
-            final DataPackage pack = getPackage(ID_EDITOR_REFERENCE, packageID);
-
-            //
-            if (pack != null) {
-
-                // Write the world out again, but to a temp
-                final File file = ResourceWriter.write(this, world);
-
-                // Replace the entry for the world with this updated one :)
-                pack.replaceEntry(world.getReferenceID(), world, file);
-
-                // Write all the maps as well
-                final ArrayList<WorldCell> cellList = world.getCellList();
+                // Find its data package
+                final DataPackage pack = getPackage(ID_EDITOR_REFERENCE, packageID);
 
                 //
-                for (WorldCell worldCell : cellList) {
-                    // Write the map out to disk
-                    final File worldCellFile = ResourceWriter.write(this, worldCell);
+                if (pack != null) {
 
-                    // Replace the entry in the data package that it is tied to with this updated one :)
-                    pack.replaceEntry(worldCell.getReferenceID(), worldCell, worldCellFile);
+                    // Write the world out again, but to a temp
+                    final File file = ResourceWriter.write(this, room);
+
+                    // Replace the entry for the world with this updated one :)
+                    pack.replaceEntry(room.getReferenceID(), room, file);
                 }
             }
         }
@@ -981,7 +949,7 @@ public class ResourceDelegate {
         return null;
     }
 
-    // Echoing a reference given a file is a little tricker; The delegate does not keep instances of files so we'll have to do
+    // Echoing a reference given a file is a little trickier; The delegate does not keep instances of files so we'll have to do
     // our own search using the FileSearch.java class and attempt to match sha1 Checksum generated on the spot with saved sha1CheckSum
     public DataRef echoFile(File file) {
 
@@ -1071,6 +1039,7 @@ public class ResourceDelegate {
             // Extract the target
             final WorldResource target = request.getTarget();
 
+            // System.out.println("Target: " + target.getDisplayName());
             // Send the resource to the target :)
             target.receive(referenceID, (WorldResource) reference.getResource());
 
@@ -1087,7 +1056,7 @@ public class ResourceDelegate {
         }
 
         // Plugin check
-        final String packageID = resource.getPackageId();
+        final String packageID = resource.getPackageID();
 
         // Grab all the plugins
         final DataPackage[] plugins = getDataPackages();
@@ -1238,6 +1207,7 @@ public class ResourceDelegate {
                     }
                 case ID_EDITOR_DISPLAY:
                     if (reference.getDisplayName().equals(id)) {
+                        // System.out.println("Reference Found: " + id);
                         return reference;
                     }
             }
@@ -1534,7 +1504,7 @@ public class ResourceDelegate {
     }
 
     public String getTemplateDirectory() {
-        return templateDirectory;
+        return lightDirectory;
     }
 
     public String getScriptDirectory() {
@@ -1547,6 +1517,25 @@ public class ResourceDelegate {
 
     public DataPackage[] getDataPackages() {
         return packageList.toArray(new DataPackage[]{});
+    }
+
+    public Room[] getAllRooms() {
+
+        //
+        Room[] output = new Room[referenceList.size()];
+        int i = 0;
+
+        for (DataRef ref : referenceList) {
+
+            //
+            if (ref.getResource() instanceof Room) {
+                output[i] = (Room) ref.getResource();
+                i++;
+            }
+        }
+
+        //
+        return Arrays.copyOfRange(output, 0, i);
     }
     // </editor-fold>
 

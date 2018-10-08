@@ -4,7 +4,7 @@
  */
 package Editor.form;
 
-import java.awt.Container;
+import Editor.FaustEditor;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -24,20 +24,24 @@ import javax.swing.JTabbedPane;
 public class WorkspaceTabComponent extends JPanel {
 
     // Variable Declaration
+    // Project Classes
+    private final FaustEditor editor;
     // Swing Classes
     private JButton closeJButton;
+    private JButton saveJButton;
     private JLabel titleJLabel;
-    private JTabbedPane workspacePane;
+    private final JTabbedPane workspacePane;
     // Data Types
     private String label;
     // End of Variable Declaration
 
-    public WorkspaceTabComponent(JTabbedPane workspacePane, String label) {
+    public WorkspaceTabComponent(FaustEditor editor, JTabbedPane workspacePane, String label) {
 
         //
         super();
 
         //
+        this.editor = editor;
         this.workspacePane = workspacePane;
         this.label = label;
 
@@ -49,8 +53,8 @@ public class WorkspaceTabComponent extends JPanel {
 
         //
         final Dimension buttonDimension = new Dimension(16, 16);
-        final Dimension labelDimension = new Dimension(72, 16);
-        final Dimension panelDimension = new Dimension(88, 16);
+        final Dimension labelDimension = new Dimension(78, 16);
+        final Dimension panelDimension = new Dimension(110, 16);
         //
         setPreferredSize(panelDimension);
         setMaximumSize(panelDimension);
@@ -62,6 +66,7 @@ public class WorkspaceTabComponent extends JPanel {
 
         //
         closeJButton = new JButton();
+        saveJButton = new JButton();
         closeJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -78,13 +83,7 @@ public class WorkspaceTabComponent extends JPanel {
 
                     final String message = "The first workspace cannot be closed.";
 
-                    //
-                    Container editor = closeJButton;
-
                     try {
-                        
-                        //
-                        editor = editor.getParent().getParent().getParent();
 
                         //
                         JOptionPane.showMessageDialog(editor, message);
@@ -94,17 +93,33 @@ public class WorkspaceTabComponent extends JPanel {
                 }
             }
         });
+        saveJButton.addActionListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent evt) {
+                editor.save();
+            }
+        });
 
         //
         closeJButton.setContentAreaFilled(false);
         closeJButton.setFocusPainted(false);
         closeJButton.setIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Editor/icons/icon-close16.png"))));
         closeJButton.setRolloverIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Editor/icons/icon-close-hover16.png"))));
+        
+        //
+        saveJButton.setContentAreaFilled(false);
+        saveJButton.setFocusPainted(false);
+        saveJButton.setIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Editor/icons/icon-save16.png"))));
+        saveJButton.setRolloverIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Editor/icons/icon-save-hover16.png"))));
 
         //
         closeJButton.setPreferredSize(buttonDimension);
         closeJButton.setMaximumSize(buttonDimension);
         closeJButton.setMinimumSize(buttonDimension);
+
+        //
+        saveJButton.setPreferredSize(buttonDimension);
+        saveJButton.setMaximumSize(buttonDimension);
+        saveJButton.setMinimumSize(buttonDimension);
 
         //
         titleJLabel = new JLabel(label);
@@ -116,6 +131,7 @@ public class WorkspaceTabComponent extends JPanel {
 
         //
         add(titleJLabel);
+        add(saveJButton);
         add(closeJButton);
     }
 }

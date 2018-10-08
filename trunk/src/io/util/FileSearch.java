@@ -264,7 +264,7 @@ public class FileSearch {
 
     public void printStats() {
         for (String string : resultList) {
-            System.out.println("Result Find: " + string);
+            // System.out.println("Result Find: " + string);
         }
     }
 }

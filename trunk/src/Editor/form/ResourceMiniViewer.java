@@ -972,7 +972,7 @@ public class ResourceMiniViewer extends javax.swing.JDialog {
     private void doPluginCheck(DefaultComboBoxModel model) {
 
         // Plugin check
-        final String packageID = resource.getPackageId();
+        final String packageID = resource.getPackageID();
 
         // Grab all the plugins
         final DataPackage[] plugins = delegate.getDataPackages();

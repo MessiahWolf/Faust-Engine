@@ -23,7 +23,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 
@@ -35,15 +34,18 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
 
     // Variable Declaration
     // Swing Native Classes
-    private JScrollPane parentPane;
+    private final JScrollPane parentPane;
     // Java Native Classes
-    private ImageIcon iconPlay;
-    private ImageIcon iconPause;
     private Object resource;
     private Point pointFocal;
+    // Java Class
+    private final Color backgroundColor = new Color(200, 200, 200);
+    private Color textileBackground = Color.LIGHT_GRAY;
+    private Color textileForeground = Color.WHITE;
     // Data Types
     private boolean showTextile = false;
-    private boolean showImage = true;
+    private boolean showImage = false;
+    private boolean imageCentered = true;
     private float widthPercent = 1.0f;
     private float heightPercent = 1.0f;
     // End of Variable Declaration
@@ -61,13 +63,6 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
     private void init() {
 
         //
-        final Class closs = getClass();
-
-        //
-        iconPlay = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-play24.png");
-        iconPause = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-pause24.png");
-
-        //
         pointFocal = new Point(0, 0);
     }
 
@@ -77,7 +72,6 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
         this.resource = resource;
 
         // * Accepted classes at this time are WorldResources, and soon Files.
-
         // Change the content panel
         changeContentPane();
 
@@ -102,44 +96,6 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
 
             //
             parentPane.setViewport(port);
-
-            //
-            animationJPanel.setOpaque(false);
-            animationJPanel.setEnabled(true);
-
-            //
-            playJButton.setEnabled(true);
-            playJButton.setVisible(true);
-            playJButton.setIcon(iconPlay);
-            playJButton.setOpaque(false);
-
-            pauseJButton.setEnabled(true);
-            pauseJButton.setVisible(true);
-            pauseJButton.setIcon(iconPause);
-            pauseJButton.setOpaque(false);
-        } else {
-
-//            //
-//            final Dimension dimension = parentPane.getViewport().getPreferredSize();
-//
-//            // Fit to imagePanel size
-//            setPreferredSize(dimension);
-//            setMaximumSize(dimension);
-//            setMinimumSize(dimension);
-//
-//            //
-//            parentPane.setViewportView(this);
-
-            //
-            animationJPanel.setOpaque(false);
-            animationJPanel.setEnabled(false);
-
-            //
-            playJButton.setEnabled(false);
-            playJButton.setVisible(false);
-
-            pauseJButton.setEnabled(false);
-            pauseJButton.setVisible(false);
         }
     }
 
@@ -198,10 +154,6 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
                 changePaneDimension(image);
             } else if (resource instanceof Animation) {
 
-                // Enabled togglability
-                animationJPanel.setEnabled(true);
-                animationJPanel.setVisible(true);
-
                 //
                 final Animation animation = (Animation) resource;
 
@@ -213,11 +165,7 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
             } else if (resource instanceof Backdrop) {
 
                 //
-                Dimension preferred = getPreferredSize();
-
-                //
-                Backdrop backdrop = (Backdrop) resource;
-                backdrop.adapt(preferred.width, preferred.height);
+                final Backdrop backdrop = (Backdrop) resource;
 
                 //
                 final Image image = backdrop.draw(this, 1.0f);
@@ -283,41 +231,30 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
         // Draw the textile background or not.
         if (showTextile) {
             drawTextileBackground(manet);
+        } else {
+            // Use our chosen background color.
+            manet.setColor(backgroundColor);
+            manet.fillRect(0, 0, getWidth(), getHeight());
         }
 
+        // Quick kick out for no image.
+        if (!showImage) {
+            return;
+        }
+        
         // Null Check ->
         if (resource != null) {
 
-            // Solve for FImages
+            // Solve for Pictures
             if (resource instanceof Picture) {
-
-                // Cast to Image
-                final Picture graphic = (Picture) resource;
-
                 //
-                final Image image = graphic.getImage();
-
-                //
-                if (showImage) {
-                    drawSingleImage(image, monet);
-                }
+                drawSingleImage( ((Picture) resource).getImage(), monet);
             } else if (resource instanceof Animation) {
-                //
-                final Animation animation = (Animation) resource;
-
                 // Draw animation style
-                if (showImage) {
-                    drawAnimation(animation, monet);
-                }
+                drawAnimation((Animation)resource, monet);
             } else if (resource instanceof Backdrop) {
-
                 //
-                final Backdrop backdrop = (Backdrop) resource;
-
-                //
-                if (showImage) {
-                    drawBackdrop(backdrop, monet);
-                }
+                drawBackdrop((Backdrop) resource, monet);
             } else if (resource instanceof Tileset) {
 
                 //
@@ -331,15 +268,11 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
                     final Image image = set.getPicture().getImage();
 
                     //
-                    if (showImage) {
-                        drawSingleImage(image, monet);
-                    }
+                    drawSingleImage(image, monet);
                 }
             } else if (resource instanceof Image) {
                 //
-                if (showImage) {
-                    drawSingleImage((Image) resource, monet);
-                }
+                drawSingleImage((Image) resource, monet);
             }
         }
     }
@@ -356,14 +289,14 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
             final int width = image.getWidth(this);
             final int height = image.getHeight(this);
 
-            //
+            // Just in case we need to scale the image.
             image = image.getScaledInstance((int) (width * widthPercent), (int) (height * heightPercent), Image.SCALE_SMOOTH);
 
             // Center the point about the center of the imageJPanel
             pointFocal = new Point(((getWidth() / 2) - (image.getWidth(this) / 2)) + 1, ((getHeight() / 2) - (image.getHeight(this) / 2)) + 1);
 
             // Draw the image on the imageJPanel at the focus point
-            manet.drawImage(image, pointFocal.x, pointFocal.y, this);
+            manet.drawImage(image, imageCentered ? pointFocal.x : 0, imageCentered ? pointFocal.y : 0, this);
         }
     }
 
@@ -388,7 +321,7 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
                     final Point centerPoint = new Point(((getWidth() / 2) - (image.getWidth(this) / 2)) + 1, ((getHeight() / 2) - (image.getHeight(this) / 2)) + 1);
 
                     // Draw the image on the imageJPanel at the focus point
-                    manet.drawImage(image, centerPoint.x, centerPoint.y, this);
+                    manet.drawImage(image, imageCentered ? centerPoint.x : 0, imageCentered ? centerPoint.y : 0, this);
                 }
             }
         } else {
@@ -408,12 +341,10 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
 
             // Draw the string
             manet.drawString(message, getWidth() / 2 - width / 2, getHeight() / 2 + height / 2);
-
         }
     }
 
     private void drawBackdrop(Backdrop backdrop, Graphics monet) {
-
         //
         final Graphics2D manet = (Graphics2D) monet;
 
@@ -459,38 +390,25 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
         final int cols = (height / colSplit) + colExtra;
 
         // Initial color
-        Color color = Color.WHITE;
+        Color color = textileForeground;
 
-        //
+        // Drawing the rectangles.
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
 
-                // Alternating colors
-                if (color == Color.LIGHT_GRAY) {
-                    color = Color.WHITE;
-                } else {
-                    color = Color.LIGHT_GRAY;
-                }
+                // Alternating colors (Took a lot of playing around to get to this code)
+                // @Ternary Option
+                color = color == textileBackground ? textileForeground : textileBackground;
 
                 // Giving it a little offset in columns
                 if (j % 2 == 0) {
-
                     if (j == cols) {
-                        if (color == Color.WHITE) {
-                            color = Color.LIGHT_GRAY;
-                        } else {
-                            color = Color.WHITE;
-                        }
+                        //@Ternary Option
+                        color = color == textileForeground ? textileBackground : textileForeground;
                     }
-                } else {
-
-                    if (j == cols - 1) {
-                        if (color == Color.WHITE) {
-                            color = Color.LIGHT_GRAY;
-                        } else {
-                            color = Color.WHITE;
-                        }
-                    }
+                } else if (j == cols - 1) {
+                    //@Ternary Option
+                    color = color == textileForeground ? textileBackground : textileForeground;
                 }
 
                 // Set the color
@@ -516,8 +434,20 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
         this.showTextile = showTextile;
     }
 
+    public void setTextileBackground(Color textileBackground) {
+        this.textileBackground = textileBackground;
+    }
+
+    public void setTextileForeground(Color textileForeground) {
+        this.textileForeground = textileForeground;
+    }
+
     public void setShowImage(boolean showImage) {
         this.showImage = showImage;
+    }
+    
+    public void setImageCentered(boolean imageCentered) {
+        this.imageCentered = imageCentered;
     }
 
     public void setWidthPercent(float widthPercent) {
@@ -526,6 +456,14 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
 
     public void setHeightPercent(float heightPercent) {
         this.heightPercent = heightPercent;
+    }
+
+    public Color getTextileBackground() {
+        return textileBackground;
+    }
+
+    public Color getTextileForeground() {
+        return textileForeground;
     }
 
     public float getWidthPercent() {
@@ -539,6 +477,10 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
     public Point getFocalPoint() {
         return pointFocal;
     }
+    
+    public boolean getImageCentered() {
+        return imageCentered;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -549,102 +491,21 @@ public class ImagePanel extends javax.swing.JPanel implements AnimationListener 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        animationJPanel = new javax.swing.JPanel();
-        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
-        playJButton = new javax.swing.JButton();
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
-        pauseJButton = new javax.swing.JButton();
-
         setMaximumSize(new java.awt.Dimension(325, 325));
         setMinimumSize(new java.awt.Dimension(325, 325));
-
-        animationJPanel.setMaximumSize(new java.awt.Dimension(156, 24));
-        animationJPanel.setMinimumSize(new java.awt.Dimension(156, 24));
-        animationJPanel.setPreferredSize(new java.awt.Dimension(156, 24));
-        animationJPanel.setLayout(new javax.swing.BoxLayout(animationJPanel, javax.swing.BoxLayout.LINE_AXIS));
-        animationJPanel.add(filler2);
-
-        playJButton.setMaximumSize(new java.awt.Dimension(24, 24));
-        playJButton.setMinimumSize(new java.awt.Dimension(24, 24));
-        playJButton.setPreferredSize(new java.awt.Dimension(24, 24));
-        playJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                playJButtonActionPerformed(evt);
-            }
-        });
-        animationJPanel.add(playJButton);
-        animationJPanel.add(filler1);
-
-        pauseJButton.setMaximumSize(new java.awt.Dimension(24, 24));
-        pauseJButton.setMinimumSize(new java.awt.Dimension(24, 24));
-        pauseJButton.setPreferredSize(new java.awt.Dimension(24, 24));
-        pauseJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pauseJButtonActionPerformed(evt);
-            }
-        });
-        animationJPanel.add(pauseJButton);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(159, Short.MAX_VALUE)
-                .addComponent(animationJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .addGap(0, 325, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(290, Short.MAX_VALUE)
-                .addComponent(animationJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .addGap(0, 325, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void playJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playJButtonActionPerformed
-
-        // TODO add your handling code here:
-        if (resource instanceof Animation) {
-
-            // Cast
-            final Animation animation = (Animation) resource;
-
-            // Play indefinitely
-            animation.setCycles(-1);
-            animation.setDelay(133);
-
-            // Start or restart
-            if (animation.isRunning() == false) {
-
-                //
-                animation.start();
-            } else {
-                animation.restart();
-            }
-        }
-    }//GEN-LAST:event_playJButtonActionPerformed
-
-    private void pauseJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseJButtonActionPerformed
-
-        // TODO add your handling code here:
-        if (resource instanceof Animation) {
-
-            //
-            final Animation animation = (Animation) resource;
-
-            // Pause the animation
-            animation.setCycles(0);
-            animation.setDelay(0);
-            animation.pause();
-        }
-    }//GEN-LAST:event_pauseJButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel animationJPanel;
-    private javax.swing.Box.Filler filler1;
-    private javax.swing.Box.Filler filler2;
-    private javax.swing.JButton pauseJButton;
-    private javax.swing.JButton playJButton;
     // End of variables declaration//GEN-END:variables
 }

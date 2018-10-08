@@ -1,30 +1,28 @@
 /**
-    Copyright (c) 2013, Robert Cherry    
-    
-    All rights reserved.
-  
-    This file is part of the Faust Editor.
-
-    The Faust Editor is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    The Faust Editor is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with The Faust Editor.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Copyright (c) 2013, Robert Cherry  *
+ * All rights reserved.
+ *
+ * This file is part of the Faust Editor.
+ *
+ * The Faust Editor is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The Faust Editor is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with The Faust Editor.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package Editor.form;
 
 import core.world.Tileset;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -43,15 +41,12 @@ public class TileSelector implements ActionListener {
     private JScrollPane scrollPane;
     // Project Classes
     private Tileset tileset;
-    private WorldCanvas worldCanvas;
+    private final RoomCanvas canvas;
     // End of Variable Declaration
-    
-    public TileSelector() {
-        scrollPane = new JScrollPane();
-    }
 
-    public void setWorldCanvas(final WorldCanvas worldCanvas) {
-        this.worldCanvas = worldCanvas;
+    public TileSelector(RoomCanvas canvas) {
+        this.canvas = canvas;
+        scrollPane = new JScrollPane();
     }
 
     public void setTileset(final Tileset tileset) {
@@ -62,14 +57,14 @@ public class TileSelector implements ActionListener {
 
         //
         final JPanel buttonJPanel = new JPanel();
-        buttonJPanel.setLayout(new BoxLayout(buttonJPanel, BoxLayout.PAGE_AXIS));
-        
+        buttonJPanel.setLayout(new BoxLayout(buttonJPanel, BoxLayout.X_AXIS));
+
         // Adjust the JScrollPane
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 
         //
-        int height = 0;
+        int width = 0;
 
         //
         final Dimension buttonDimension = new Dimension(32, 32);
@@ -90,20 +85,27 @@ public class TileSelector implements ActionListener {
                 button.setContentAreaFilled(false);
 
                 // Add to the width
-                height += buttonDimension.height;
+                width += buttonDimension.width;
 
-                // Set the graphic as the image of the tile, not just a default image
-                button.setIcon(new ImageIcon(tileset.images[i]));
-                button.addActionListener(this);
+                if (tileset.images[i] != null) {
 
-                // Add to this layout
-                buttonJPanel.add(button);
-                buttonJPanel.add(Box.createVerticalStrut(4));
+                    // Set the graphic as the image of the tile, not just a default image
+                    button.setIcon(new ImageIcon(tileset.images[i]));
+                    button.addActionListener(this);
+
+                    // Add to this layout
+                    buttonJPanel.add(button);
+                    //buttonJPanel.add(Box.createVerticalStrut(4));
+                }
             }
         }
-
+        //
+        buttonJPanel.setPreferredSize(new Dimension(width, 32));
+        buttonJPanel.setMinimumSize(new Dimension(width, 32));
+        buttonJPanel.setMaximumSize(new Dimension(width, 32));
+        buttonJPanel.setSize(new Dimension(width, 32));
         // Dimension for JScrollPane
-        final Dimension paneDimension = new Dimension(36, height);
+        final Dimension paneDimension = new Dimension(width, 36);
 
         //
         scrollPane.setPreferredSize(paneDimension);
@@ -111,7 +113,7 @@ public class TileSelector implements ActionListener {
         scrollPane.setMinimumSize(paneDimension);
         scrollPane.setSize(paneDimension);
         scrollPane.revalidate();
-        
+
         //
         scrollPane.setViewportView(buttonJPanel);
 
@@ -134,9 +136,9 @@ public class TileSelector implements ActionListener {
             final int tileChosen = Integer.parseInt(sourceJButton.getName());
 
             // Soon -- communicate with fMap canvas
-            if (worldCanvas != null) {
+            if (canvas != null) {
                 if (tileset != null) {
-                    worldCanvas.setTile(tileset, tileChosen);
+                    canvas.setTile(tileset, tileChosen);
                 }
             }
         } catch (NumberFormatException nfe) {

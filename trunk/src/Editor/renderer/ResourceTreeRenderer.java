@@ -18,11 +18,11 @@
  */
 package Editor.renderer;
 
+import core.world.LightSource;
 import core.world.Actor;
 import core.world.Animation;
 import core.world.Backdrop;
-import core.world.World;
-import core.world.WorldCell;
+import core.world.Room;
 import core.world.WorldResource;
 import core.world.Tileset;
 import core.world.WorldItem;
@@ -51,7 +51,6 @@ public class ResourceTreeRenderer extends DefaultTreeCellRenderer implements Tre
     private ImageIcon iconMap;
     private ImageIcon iconPackage;
     private ImageIcon iconBackdrop;
-    private ImageIcon iconWorld;
     private ImageIcon iconScript;
     private ImageIcon iconTileset;
     // End of Variable Declaration
@@ -68,7 +67,6 @@ public class ResourceTreeRenderer extends DefaultTreeCellRenderer implements Tre
         iconBackdrop = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-background24.png");
         iconMap = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-map24.png");
         iconPackage = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-package24.png");
-        iconWorld = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-world24.png");
         iconTileset = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-tileset24.png");
         iconScript = ResourceReader.readClassPathIcon(closs,"/Editor/icons/icon-script24.png");
     }
@@ -95,7 +93,7 @@ public class ResourceTreeRenderer extends DefaultTreeCellRenderer implements Tre
             final WorldResource resource = (WorldResource) userObject;
 
             // Ask
-            if (resource.getPackageId() == null || resource.getPackageId().isEmpty()) {
+            if (resource.getPackageID() == null || resource.getPackageID().isEmpty()) {
                 setForeground(new Color(60, 60, 60));
             } else {
                 setForeground(new Color(65, 105, 255));
@@ -149,22 +147,14 @@ public class ResourceTreeRenderer extends DefaultTreeCellRenderer implements Tre
                 //
                 setText(background.getDisplayName());
                 setIcon(iconBackdrop);
-            } else if (userObject instanceof WorldCell) {
+            } else if (userObject instanceof Room) {
 
                 // Cast
-                final WorldCell fMap = (WorldCell) userObject;
+                final Room fMap = (Room) userObject;
 
                 //
                 setText(fMap.getDisplayName());
                 setIcon(iconMap);
-            } else if (userObject instanceof World) {
-
-                // Cast
-                final World fworld = (World) userObject;
-                setText(fworld.getDisplayName());
-
-                //
-                setIcon(iconWorld);
             } else if (userObject instanceof WorldScript) {
 
                 //
@@ -173,6 +163,11 @@ public class ResourceTreeRenderer extends DefaultTreeCellRenderer implements Tre
 
                 //
                 setIcon(iconScript);
+            }else if (userObject instanceof LightSource) {
+                
+                //
+                final LightSource source = (LightSource) userObject;
+                setText(source.getDisplayName());
             }
         } else if (userObject instanceof DataPackage) {
 

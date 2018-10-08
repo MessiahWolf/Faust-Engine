@@ -125,7 +125,7 @@ public class Picture implements WorldResource {
     }
 
     @Override
-    public String getPackageId() {
+    public String getPackageID() {
         return packageID;
     }
 
@@ -179,7 +179,7 @@ public class Picture implements WorldResource {
     }
 
     @Override
-    public void setPackageId(String newStr) {
+    public void setPackageID(String newStr) {
         packageID = newStr;
     }
 

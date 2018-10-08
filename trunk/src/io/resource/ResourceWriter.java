@@ -18,21 +18,23 @@
  */
 package io.resource;
 
-import core.world.WorldTemplate;
+import core.coll.CollisionWrapper;
+import core.world.LightSource;
 import core.world.WorldResource;
 import core.world.WorldAction;
 import core.world.Actor;
 import core.world.Animation;
 import core.world.Backdrop;
-import core.world.World;
 import core.world.Illustration;
 import core.world.WorldItem;
-import core.world.WorldCellLayer;
-import core.world.WorldCell;
+import core.world.RoomLayer;
+import core.world.Room;
 import core.world.WorldObject;
 import core.world.Tileset;
 import core.world.WorldScript;
 import io.util.FileUtils;
+import java.awt.Point;
+import java.awt.Polygon;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,20 +87,13 @@ public class ResourceWriter {
 
             // Write the world item
             return writeItem(item, delegate.getItemDirectory(), item.getReferenceName());
-        } else if (closs == WorldCell.class) {
+        } else if (closs == Room.class) {
 
             // Cast to a world cell
-            final WorldCell worldCell = (WorldCell) resource;
+            final Room room = (Room) resource;
 
             // Write the world cell
-            return writeWorldCell(worldCell, delegate.getCellDirectory(), worldCell.getReferenceName());
-        } else if (closs == World.class) {
-
-            // Cast to a world instance
-            final World world = (World) resource;
-
-            // Write the world instance
-            return writeWorldInstance(world, delegate.getWorldDirectory(), world.getReferenceName());
+            return writeRoom(room, delegate.getCellDirectory());
         } else if (Illustration.class.isAssignableFrom(closs)) {
 
             // Cast to an scenic object
@@ -106,13 +101,6 @@ public class ResourceWriter {
 
             // Write the animated sprite
             return writeGraphic(delegate, graphic);
-        } else if (closs == WorldTemplate.class) {
-
-            // Cast to a template
-            final WorldTemplate template = (WorldTemplate) resource;
-
-            // Write the template
-            return writeTemplate(template, delegate.getTemplateDirectory(), template.getReferenceName());
         } else if (closs == WorldScript.class) {
 
             // Cast to a world script
@@ -120,6 +108,13 @@ public class ResourceWriter {
 
             // Write the script
             return writeScript(script, delegate.getScriptDirectory(), script.getReferenceName());
+        } else if (closs == LightSource.class) {
+            
+            //
+            final LightSource light = (LightSource) resource;
+            
+            //
+            return writeLight(light, delegate.getTemplateDirectory(), light.getReferenceName());
         }
 
         // Returning nothing otherwise
@@ -184,73 +179,53 @@ public class ResourceWriter {
         return file;
     }
 
-    private static File writeWorldCell(WorldCell worldCell, String directory, String referenceName) {
+    private static File writeLight(LightSource light, String directory, String referenceName) {
+
+        // Create a new Document to save
+        final Document document = createDocument();
+
+        // Define Root Node to identify it when it is being read
+        final Element root = (Element) document.createElement(validateString(light.getClass().getSimpleName()));
+
+        // Append attribute node onto the child
+        for (Map.Entry<String, Object> map : light.getAttributeMap().entrySet()) {
+            root.setAttribute(map.getKey(), String.valueOf(map.getValue()));
+        }
+
+        // Append Actor node onto the XMLDocument as a child
+        document.appendChild(root);
+
+        // Our output File
+        final File file = streamXMLExtension(document, directory, referenceName);
+
+        // Finally create the XMLDocument
+        return file;
+    }
+
+    private static File writeRoom(Room room, String directory) {
 
         // Create a new Document to save
         final Document doc = createDocument();
 
         // Define the fMap Element of this XMLDocument
-        final Element root = (Element) doc.createElement(validateString("WorldCell"));
+        final Element root = (Element) doc.createElement(validateString("Room"));
 
         // First set all the attributes of the fMap
-        for (Map.Entry<String, Object> set : worldCell.getAttributeMap().entrySet()) {
+        for (Map.Entry<String, Object> set : room.getAttributeMap().entrySet()) {
             root.setAttribute(set.getKey(), String.valueOf(set.getValue()));
         }
 
         // Lay the background
-        root.appendChild(deriveBackgroundElement(doc, worldCell.getBackgroundList()));
+        root.appendChild(deriveBackgroundElement(doc, room.getBackgroundList()));
 
         // Grab all the Layers in the fMap
-        root.appendChild(deriveWorldCellLayerElement(doc, worldCell.getLayerList()));
+        root.appendChild(deriveLayerElement(doc, room.getLayerList()));
 
         // Then Append fMap node to the completed XMLDocument
         doc.appendChild(root);
 
         // Finally call Stream to create the file
-        return streamDefinedExtension(doc, directory, referenceName, ResourceReader.XML_EXTENSION);
-    }
-
-    private static File writeWorldInstance(World world, String directory, String referenceName) {
-
-        // Create an empty Document
-        final Document document = createDocument();
-
-        //
-        final Element root = (Element) document.createElement(validateString("WorldInstance"));
-
-        // Save all the attributes of the FWorld Wrapper class for Box2D's world.
-        for (Map.Entry<String, Object> map : world.getAttributeMap().entrySet()) {
-            root.setAttribute(map.getKey(), String.valueOf(map.getValue()));
-        }
-
-        // Save all the world cells
-        root.appendChild(deriveWorldCellElement(document, world.getCellList()));
-
-        // Append that to the document
-        document.appendChild(root);
-        
-        //
-        return streamDefinedExtension(document, directory, referenceName, ResourceReader.XML_EXTENSION);
-    }
-
-    private static File writeTemplate(WorldTemplate template, String directory, String referenceName) {
-
-        // Create an empty Document
-        final Document document = createDocument();
-
-        //
-        final Element root = (Element) document.createElement(validateString("WorldTemplate"));
-
-        // Save all the attributes of the FWorld Wrapper class for Box2D's world.
-        for (Map.Entry<String, Object> map : template.getAttributeMap().entrySet()) {
-            root.setAttribute(map.getKey(), String.valueOf(map.getValue()));
-        }
-
-        // Append that to the document
-        document.appendChild(root);
-
-        // Finally call stream to create the xml document
-        return streamDefinedExtension(document, directory, referenceName, ResourceReader.XML_EXTENSION);
+        return streamDefinedExtension(doc, directory, room.getReferenceName(), ResourceReader.XML_EXTENSION);
     }
 
     private static File writeScript(WorldScript script, String directory, String referenceName) {
@@ -299,20 +274,20 @@ public class ResourceWriter {
         if (new File(tempFolder).exists()) {
 
             // Write the graphic file
-            graphicFile = writeGraphic(closs, map, tempFolder, referenceName);
+            graphicFile = writeGraphic(object, map, tempFolder, referenceName);
         }
 
         // Creates an archive of all the chosen files in the output directory
         return graphicFile;
     }
 
-    private static File writeGraphic(Class closs, HashMap<String, Object> map, String directory, String referenceName) {
+    private static File writeGraphic(Illustration closs, HashMap<String, Object> map, String directory, String referenceName) {
 
         // Create a new Document to save
         final Document document = createDocument();
 
         // Setting some attributes of the fMap
-        final Element element = (Element) document.createElement(validateString(closs.getSimpleName()));
+        final Element element = (Element) document.createElement(validateString(closs.getClass().getSimpleName()));
 
         // Set these attributes
         for (Map.Entry<String, Object> set : map.entrySet()) {
@@ -323,6 +298,18 @@ public class ResourceWriter {
 
             // Set the attribute
             element.setAttribute(property, value);
+        }
+
+        // Append the polygon node.
+        if (closs instanceof Animation) {
+
+            final Animation animation = (Animation) closs;
+            // System.out.println("Attemptiong to append to animation.");
+
+            //
+            if (animation.getWrapper() != null) {
+                element.appendChild(deriveCollisionListElement(document, animation.getWrapper()));
+            }
         }
 
         // Append to Document
@@ -373,7 +360,7 @@ public class ResourceWriter {
 
             // Store the name of the action and information to trace the animation
             element.setAttribute("action", action.name());
-            element.setAttribute("animationPackageId", animation.getPackageId());
+            element.setAttribute("animationPackageId", animation.getPackageID());
             element.setAttribute("animationEditorId", animation.getReferenceID());
 
             // Give to parent
@@ -382,6 +369,88 @@ public class ResourceWriter {
 
         // Return our completed action list
         return actions;
+    }
+
+    private static Element deriveCollisionListElement(Document document, CollisionWrapper wrapper) {
+
+        //
+        final Element collisionElement = (Element) document.createElement(validateString("Collision"));
+
+        // The nested array
+        final Object[][] data = wrapper.getData();
+
+        //
+        for (int i = 0; i < data.length; i++) {
+
+            // Data[animation index][0] - The polygons and their data
+            final Polygon[] polygons = (Polygon[]) data[i][0];
+            final HashMap<Point, Integer> map = (HashMap<Point, Integer>) data[i][1];
+            final String[] regions = (String[]) data[i][2];
+            final double[] multipliers = (double[]) data[i][3];
+            // System.out.println("Writer Precision: " + data[i][4]);
+            final int precision = (int) data[i][4];
+            int j = -1;
+
+            //
+            final Element indexElement = (Element) document.createElement(String.valueOf("Index"));
+            indexElement.setAttribute("n", String.valueOf(i));
+            indexElement.setAttribute("pointcount", String.valueOf(map == null ? 0 : map.size()));
+            indexElement.setAttribute("polycount", String.valueOf(polygons == null ? 0 : polygons.length));
+            indexElement.setAttribute("precision", String.valueOf(precision));
+
+            //
+            if (map != null && polygons != null) {
+
+                // Appending the points and their datum
+                for (Map.Entry<Point, Integer> m : map.entrySet()) {
+
+                    //
+                    final Element pointElement = (Element) document.createElement("Point");
+                    final Point p = m.getKey();
+                    pointElement.setAttribute("x", String.valueOf(p.x));
+                    pointElement.setAttribute("y", String.valueOf(p.y));
+                    pointElement.setAttribute("type", String.valueOf(m.getValue()));
+
+                    // Add the point to the index element
+                    indexElement.appendChild(pointElement);
+                }
+
+                // Appending the polygons after
+                for (Polygon polygon : polygons) {
+
+                    // Used to keep map entries lined up with array indexes.
+                    j++;
+
+                    // Finally
+                    final Element polygonElement = (Element) document.createElement(String.valueOf("Polygon"));
+
+                    // Set the name of the polygon region and the multiplier
+                    polygonElement.setAttribute("name", regions[j]);
+                    polygonElement.setAttribute("mult", String.valueOf(multipliers[j]));
+
+                    // Adding all npoints.
+                    for (int k = 0; k < polygon.npoints; k++) {
+
+                        //
+                        final Element coord = (Element) document.createElement(String.valueOf("Coord"));
+                        coord.setAttribute("x", String.valueOf(polygon.xpoints[k]));
+                        coord.setAttribute("y", String.valueOf(polygon.ypoints[k]));
+
+                        // Append to polygon node
+                        polygonElement.appendChild(coord);
+                    }
+
+                    // Append the polygon to the index.
+                    indexElement.appendChild(polygonElement);
+                }
+            }
+
+            // Append that to the main collision block
+            collisionElement.appendChild(indexElement);
+        }
+
+        //
+        return collisionElement;
     }
 
     private static Element deriveItemListElement(Document document, HashMap<WorldItem, Double> map) {
@@ -397,7 +466,7 @@ public class ResourceWriter {
 
             // Grab attributes of the item
             final String referenceID = item.getReferenceName();
-            final String packageID = item.getPackageId();
+            final String packageID = item.getPackageID();
             final String displayName = item.getDisplayName();
 
             // Grab the chance to drop the item; not fully integrated
@@ -446,7 +515,7 @@ public class ResourceWriter {
         return scenery;
     }
 
-    public static Element deriveWorldCellElement(Document document, ArrayList<WorldCell> list) {
+    public static Element deriveWorldCellElement(Document document, ArrayList<Room> list) {
 
         // Create the new content element
         final Element content = document.createElement(validateString("content"));
@@ -455,7 +524,7 @@ public class ResourceWriter {
         for (int i = 0; i < list.size(); i++) {
 
             // Grab the current map
-            final WorldCell worldCell = list.get(i);
+            final Room worldCell = list.get(i);
 
             // Our wrapped map
             final Element element = document.createElement(validateString("WorldCell"));
@@ -476,7 +545,7 @@ public class ResourceWriter {
         return content;
     }
 
-    public static Element deriveWorldCellLayerElement(Document document, ArrayList<WorldCellLayer> list) {
+    public static Element deriveLayerElement(Document document, ArrayList<RoomLayer> list) {
 
         // Create a new content element;
         final Element content = document.createElement(validateString("content"));
@@ -485,13 +554,14 @@ public class ResourceWriter {
         for (int i = 0; i < list.size(); i++) {
 
             // Current Layer in fMap
-            final WorldCellLayer layer = list.get(i);
+            final RoomLayer layer = list.get(i);
 
             // Grab all the fMap Objects in the Layer
             final ArrayList<WorldObject> objectList = layer.getInhabitants();
+            final ArrayList<LightSource> lightList = layer.getLightList();
 
             // Create a new Node in the fMap Tree for this Layer
-            final Element elementLayer = document.createElement(validateString("WorldCellLayer"));
+            final Element elementLayer = document.createElement(validateString("Layer"));
 
             // First set all the attributes of the Layer
             for (Map.Entry<String, Object> set : layer.getAttributeMap().entrySet()) {
@@ -526,6 +596,35 @@ public class ResourceWriter {
                 elementLayer.appendChild(elementObject);
             }
 
+            // Then Store worldObject(s)
+            for (int j = 0; j < lightList.size(); j++) {
+
+                // Element for storing the worldObject
+                Element elementObject;
+
+                // Current worldObject in Layer
+                final LightSource source = lightList.get(j);
+
+                //
+                String closs = source.getClass().getSimpleName();
+
+                //
+                elementObject = (Element) document.createElement(validateString(closs));
+
+                // Place attribute list
+                for (Map.Entry<String, Object> set : source.getAttributeMap().entrySet()) {
+                    elementObject.setAttribute(set.getKey(), String.valueOf(set.getValue()));
+                }
+
+                // Make sure it includes its location
+                elementObject.setAttribute("x", String.valueOf(source.getX()));
+                elementObject.setAttribute("y", String.valueOf(source.getY()));
+                elementObject.setAttribute("angle", String.valueOf(source.getAngle()));
+
+                // Append worldObject node onto the Layer node as child
+                elementLayer.appendChild(elementObject);
+            }
+
             // Append the entire node with all the content onto this node
             content.appendChild(elementLayer);
         }
@@ -536,7 +635,7 @@ public class ResourceWriter {
 
     public static File streamDefinedExtension(Document document, String directory, String referenceName, String extension) {
 
-        // Addon the xml extension for recognization; won't add if it doesnt need to
+        // Addon the xml extension for recognization; won't addObject if it doesnt need to
         referenceName = FileUtils.extend(referenceName, extension);
 
         // Create the file on the disk
@@ -576,7 +675,7 @@ public class ResourceWriter {
 
     public static File streamXMLExtension(Document document, String directory, String referenceName) {
 
-        // Addon the xml extension for recognization; if won't add it if it doesn't need it
+        // Addon the xml extension for recognization; if won't addObject it if it doesn't need it
         referenceName = FileUtils.extend(referenceName, ResourceReader.XML_EXTENSION);
 
         // Create the file on the disk

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Room displayName="Da Dungeon" height="320" packageID="null" referenceID="rm00000001" referenceName="rfdd01" width="320">
+<scenery>
+<Background blockColumns="3" blockHGap="0" blockHeight="128" blockRows="3" blockVGap="0" blockWidth="128" blockXOffset="0" blockYOffset="0" displayName="BG Brick 1" packageID="null" picturePackageID="DP078FDA87" pictureReferenceID="U83d802f8cf634e" pictureSum="null" referenceID="bg0000001" referenceName="bgb01" stretch="true"/>
+</scenery>
+<content>
+<Layer alpha="1.0" displayName="Tile Layer 1" index="0">
+<WorldTile displayName="GS Bricks 2" index="2" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="360.0" x="32" y="256"/>
+<WorldTile displayName="GS Bricks 2" index="2" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="90.0" x="32" y="32"/>
+<WorldTile displayName="GS Bricks 2" index="2" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="90.0" x="64" y="0"/>
+<WorldTile displayName="GS Bricks 2" index="5" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="270.0" x="0" y="224"/>
+<WorldTile displayName="GS Bricks 2" index="5" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="90.0" x="0" y="192"/>
+<WorldTile displayName="GS Bricks 2" index="0" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="0" y="0"/>
+<WorldTile displayName="GS Bricks 2" index="0" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="32" y="0"/>
+<WorldTile displayName="GS Bricks 2" index="0" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="0" y="256"/>
+<WorldTile displayName="GS Bricks 2" index="0" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="0" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="0" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="32" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="0" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="288" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="4" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="180.0" x="0" y="64"/>
+<WorldTile displayName="GS Bricks 2" index="4" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="180.0" x="0" y="96"/>
+<WorldTile displayName="GS Bricks 2" index="4" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="180.0" x="0" y="128"/>
+<WorldTile displayName="GS Bricks 2" index="4" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="180.0" x="0" y="160"/>
+<WorldTile displayName="GS Bricks 2" index="1" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="64" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="1" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="96" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="1" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="128" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="1" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="160" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="1" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="192" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="1" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="224" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="0" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="0" y="32"/>
+<WorldTile displayName="Grass" index="2" packageID="null" referenceID="UK3F474364" referenceName="UKDBA32555" rotation="360.0" x="192" y="224"/>
+<WorldTile displayName="Grass" index="1" packageID="null" referenceID="UK3F474364" referenceName="UKDBA32555" rotation="360.0" x="160" y="224"/>
+<WorldTile displayName="Grass" index="1" packageID="null" referenceID="UK3F474364" referenceName="UKDBA32555" rotation="360.0" x="128" y="224"/>
+<WorldTile displayName="GS Bricks 2" index="1" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="0.0" x="256" y="288"/>
+<WorldTile displayName="GS Bricks 2" index="2" packageID="null" referenceID="gs0000001" referenceName="gsb201" rotation="180.0" x="288" y="0"/>
+<WorldTile displayName="Grass" index="0" packageID="null" referenceID="UK3F474364" referenceName="UKDBA32555" rotation="360.0" x="96" y="224"/>
+<WorldTile displayName="Old Bricks" index="0" packageID="null" referenceID="UK24FCA20C" referenceName="UKB7E654EE" rotation="270.0" x="96" y="256"/>
+<WorldTile displayName="Old Bricks" index="1" packageID="null" referenceID="UK24FCA20C" referenceName="UKB7E654EE" rotation="180.0" x="192" y="256"/>
+<WorldTile displayName="Old Bricks" index="8" packageID="null" referenceID="UK24FCA20C" referenceName="UKB7E654EE" rotation="180.0" x="160" y="256"/>
+<WorldTile displayName="Old Bricks" index="8" packageID="null" referenceID="UK24FCA20C" referenceName="UKB7E654EE" rotation="180.0" x="128" y="256"/>
+<LightSource amps="0.0" angle="12" displayName="LS9BA03E3C" packageID="" referenceID="LS5C6AE7C5" referenceName="LS1459ABB9" volts="0.0" x="172" y="61"/>
+</Layer>
+</content>
+</Room>

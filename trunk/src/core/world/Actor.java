@@ -21,7 +21,7 @@ package core.world;
 import core.event.AnimationEvent;
 import core.event.AnimationListener;
 import java.awt.Graphics;
-import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 import java.util.HashMap;
@@ -130,7 +130,7 @@ public class Actor extends WorldObject implements AnimationListener {
         // Script must exist for these options
         if (script != null) {
             attributeMap.put("scriptEditorId", script.getReferenceID());
-            attributeMap.put("scriptPackageId", script.getPackageId());
+            attributeMap.put("scriptPackageId", script.getPackageID());
         }
     }
 
@@ -165,6 +165,11 @@ public class Actor extends WorldObject implements AnimationListener {
 
     @Override
     public Rectangle2D.Float getBounds() {
+        return null;
+    }
+
+    @Override
+    public Polygon getPreciseBounds() {
         return null;
     }
 

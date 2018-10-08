@@ -23,9 +23,9 @@ import core.world.Animation;
 import core.world.WorldTile;
 import core.world.Tileset;
 import core.world.WorldItem;
-import core.world.WorldCellLayer;
+import core.world.RoomLayer;
 import core.world.WorldObject;
-import Editor.form.WorldCanvas;
+import Editor.form.RoomCanvas;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -56,7 +56,7 @@ public class WorldCanvasTool {
     private Point pointLocation;
     private Rectangle rectangleCell;
     // Project Classes
-    private WorldCanvas worldCanvas;
+    private RoomCanvas worldCanvas;
     private Animation animationShadow;
     private WorldTile tileShadow;
     // Data types
@@ -71,7 +71,7 @@ public class WorldCanvasTool {
     public static final int FLAG_SELECT = 0x003;
     // End of Variable Declaration
 
-    public WorldCanvasTool(WorldCanvas worldCanvas) {
+    public WorldCanvasTool(RoomCanvas worldCanvas) {
 
         // Set values equal
         this.worldCanvas = worldCanvas;
@@ -99,9 +99,9 @@ public class WorldCanvasTool {
             final Class closs = getClass();
 
             //
-            selectorImage = kit.getImage(closs.getResource("/Editor/icons/icon-selector24.png"));
-            markerImage = kit.getImage(closs.getResource("/Editor/icons/icon-marker24.png"));
-            eraserImage = kit.getImage(closs.getResource("/Editor/icons/icon-eraser24.png"));
+            selectorImage = kit.getImage(closs.getResource("/Editor/icons/icon-selector21.png"));
+            markerImage = kit.getImage(closs.getResource("/Editor/icons/icon-marker21.png"));
+            eraserImage = kit.getImage(closs.getResource("/Editor/icons/icon-eraser21.png"));
         } catch (NullPointerException npe) {
         }
 
@@ -165,7 +165,7 @@ public class WorldCanvasTool {
             // Cell changed
             rectangleCell.setBounds(pointLocation.x, pointLocation.y, gridSize.width, gridSize.height);
 
-            // Tell WorldCanvas to repaint
+            // Tell RoomCanvas to repaint
             worldCanvas.repaint();
         }
     }
@@ -183,7 +183,7 @@ public class WorldCanvasTool {
         }
     }
 
-    public void paintTile(WorldCellLayer layer) {
+    public void paintTile(RoomLayer layer) {
 
         // The Tile to paint must exist
         if (tileShadow != null) {
@@ -196,7 +196,7 @@ public class WorldCanvasTool {
 
                     // Add to fMap canvas at position
                     worldCanvas.addAt(tileShadow, pointLocation);
-
+                    
                     //
                     lastRotation = tileShadow.getRotation();
 
@@ -258,6 +258,10 @@ public class WorldCanvasTool {
     public boolean isVisible() {
         return visible;
     }
+    
+    public Image getToolImage() {
+        return toolImage;
+    }
 
     public Point getLocation() {
         return pointLocation;
@@ -287,15 +291,15 @@ public class WorldCanvasTool {
             manet.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
             // Draw the image by mode
-            if (toolImage != null) {
-
-                int newX = (int) (pointLocation.x + (gridSize.width / 2) - (toolImage.getWidth(obs) / 2));
-                int newY = (int) (pointLocation.y + (gridSize.height / 2) - (toolImage.getHeight(obs) / 2));
-                newX = toolImage.getWidth(obs) <= gridSize.width ? newX : pointLocation.x;
-                newY = toolImage.getHeight(obs) <= gridSize.height ? newY : pointLocation.y;
-
-                manet.drawImage(toolImage, newX, newY, obs);
-            }
+//            if (toolImage != null) {
+//
+//                int newX = (int) (pointLocation.x + (gridSize.width / 2) - (toolImage.getWidth(obs) / 2));
+//                int newY = (int) (pointLocation.y + (gridSize.height / 2) - (toolImage.getHeight(obs) / 2));
+//                newX = toolImage.getWidth(obs) <= gridSize.width ? newX : pointLocation.x;
+//                newY = toolImage.getHeight(obs) <= gridSize.height ? newY : pointLocation.y;
+//
+//                manet.drawImage(toolImage, newX, newY, obs);
+//            }
 
             // Attempt to draw the tile shadow
             if (tileShadow != null) {

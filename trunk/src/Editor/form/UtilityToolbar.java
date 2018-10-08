@@ -19,12 +19,12 @@
 package Editor.form;
 
 import Editor.FaustEditor;
+import core.world.LightSource;
 import core.world.Animation;
 import core.world.Backdrop;
 import core.world.Tileset;
-import core.world.WorldCell;
-import core.world.World;
-import core.world.item.Weapon;
+import core.world.Room;
+import core.world.RoomLayer;
 import io.resource.ResourceDelegate;
 import io.resource.ResourceReader;
 import java.awt.Dimension;
@@ -48,7 +48,6 @@ public class UtilityToolbar extends javax.swing.JPanel {
 
     // Variable Declaration
     // Project Classes
-    private ChecksumViewer viewer;
     private ResourceDelegate delegate;
     private FaustEditor editor;
     // End of Variable Declaration
@@ -75,20 +74,16 @@ public class UtilityToolbar extends javax.swing.JPanel {
             final Class closs = getClass();
 
             // Grab some icons from cache
-            mapJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-map24.png"));
-            actorJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-actor24.png"));
-            tilesetJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-tileset24.png"));
-            animationJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-animation24.png"));
-            backdropJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-background24.png"));
-            itemJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-item24.png"));
+            mapJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-room-add24.png"));
+            actorJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-actor-add24.png"));
+            tilesetJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-tileset-add24.png"));
+            animationJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-animation-add24.png"));
+            backdropJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-background-add24.png"));
+            lightJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-light24.png"));
+            itemJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-item-add24.png"));
             zoneJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-zone24.png"));
-            layerJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-layer24.png"));
-            packageJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-package24.png"));
-            worldJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-world24.png"));
-            labJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-lab24.png"));
-            scriptJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-script24.png"));
-            pictureJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-camera24.png"));
-            sumJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-checksum24.png"));
+            layerJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-layer-add24.png"));
+            packageJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-package-add24.png"));
         } catch (NullPointerException npe) {
             System.err.println(npe);
         }
@@ -96,21 +91,21 @@ public class UtilityToolbar extends javax.swing.JPanel {
         //
         final Dimension fiveComponentDimension = new Dimension(168, 32);
         final Dimension fourComponentDimension = new Dimension(136, 32);
-        final Dimension tripleComponentDimension = new Dimension(104, 32);
-        final Dimension doubleComponentDimension = new Dimension(72, 32);
-        final Dimension singleComponentDimension = new Dimension(40, 32);
+        final Dimension threeComponentDimension = new Dimension(104, 32);
+        final Dimension twoComponentDimension = new Dimension(72, 32);
+        final Dimension oneComponentDimension = new Dimension(40, 32);
         final Dimension strutDimension = new Dimension(4, 32);
 
         //
         final JToolBar worldBar = new JToolBar();
         worldBar.setFloatable(false);
         worldBar.setOrientation(JToolBar.HORIZONTAL);
-        worldBar.setPreferredSize(tripleComponentDimension);
-        worldBar.setMaximumSize(tripleComponentDimension);
-        worldBar.setMinimumSize(tripleComponentDimension);
+        worldBar.setPreferredSize(threeComponentDimension);
+        worldBar.setMaximumSize(threeComponentDimension);
+        worldBar.setMinimumSize(threeComponentDimension);
         worldBar.add(new Box.Filler(strutDimension, strutDimension, strutDimension));
-        worldBar.add(worldJButton);
         worldBar.add(mapJButton);
+        worldBar.add(lightJButton);
         worldBar.add(layerJButton);
         worldBar.add(new Box.Filler(strutDimension, strutDimension, strutDimension));
 
@@ -118,9 +113,9 @@ public class UtilityToolbar extends javax.swing.JPanel {
         final JToolBar resourceBar = new JToolBar();
         resourceBar.setFloatable(false);
         resourceBar.setOrientation(JToolBar.HORIZONTAL);
-        resourceBar.setPreferredSize(doubleComponentDimension);
-        resourceBar.setMaximumSize(doubleComponentDimension);
-        resourceBar.setMinimumSize(doubleComponentDimension);
+        resourceBar.setPreferredSize(twoComponentDimension);
+        resourceBar.setMaximumSize(twoComponentDimension);
+        resourceBar.setMinimumSize(twoComponentDimension);
         resourceBar.add(new Box.Filler(strutDimension, strutDimension, strutDimension));
         resourceBar.add(actorJButton);
         resourceBar.add(itemJButton);
@@ -130,9 +125,9 @@ public class UtilityToolbar extends javax.swing.JPanel {
         final JToolBar graphicBar = new JToolBar();
         graphicBar.setFloatable(false);
         graphicBar.setOrientation(JToolBar.HORIZONTAL);
-        graphicBar.setPreferredSize(tripleComponentDimension);
-        graphicBar.setMaximumSize(tripleComponentDimension);
-        graphicBar.setMinimumSize(tripleComponentDimension);
+        graphicBar.setPreferredSize(threeComponentDimension);
+        graphicBar.setMaximumSize(threeComponentDimension);
+        graphicBar.setMinimumSize(threeComponentDimension);
         graphicBar.add(new Box.Filler(strutDimension, strutDimension, strutDimension));
         graphicBar.add(backdropJButton);
         graphicBar.add(animationJButton);
@@ -143,22 +138,18 @@ public class UtilityToolbar extends javax.swing.JPanel {
         final JToolBar pluginBar = new JToolBar();
         pluginBar.setFloatable(false);
         pluginBar.setOrientation(JToolBar.HORIZONTAL);
-        pluginBar.setPreferredSize(fiveComponentDimension);
-        pluginBar.setMaximumSize(fiveComponentDimension);
-        pluginBar.setMinimumSize(fiveComponentDimension);
+        pluginBar.setPreferredSize(oneComponentDimension);
+        pluginBar.setMaximumSize(oneComponentDimension);
+        pluginBar.setMinimumSize(oneComponentDimension);
         pluginBar.add(new Box.Filler(strutDimension, strutDimension, strutDimension));
         pluginBar.add(packageJButton);
-        pluginBar.add(labJButton);
-        pluginBar.add(scriptJButton);
-        //pluginBar.add(pictureJButton);
-        pluginBar.add(sumJButton);
         pluginBar.add(new Box.Filler(strutDimension, strutDimension, strutDimension));
 
         // 392
         // Change the size
-        setPreferredSize(new Dimension(456, 32));
-        setMinimumSize(new Dimension(456, 32));
-        setMaximumSize(new Dimension(456, 32));
+        setPreferredSize(new Dimension(288, 32));
+        setMinimumSize(new Dimension(288, 32));
+        setMaximumSize(new Dimension(288, 32));
 
         //
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
@@ -182,7 +173,6 @@ public class UtilityToolbar extends javax.swing.JPanel {
     private void initComponents() {
 
         mapJButton = new JButton();
-        worldJButton = new JButton();
         layerJButton = new JButton();
         packageJButton = new JButton();
         zoneJButton = new JButton();
@@ -191,10 +181,7 @@ public class UtilityToolbar extends javax.swing.JPanel {
         backdropJButton = new JButton();
         itemJButton = new JButton();
         actorJButton = new JButton();
-        labJButton = new JButton();
-        scriptJButton = new JButton();
-        pictureJButton = new JButton();
-        sumJButton = new JButton();
+        lightJButton = new JButton();
 
         mapJButton.setToolTipText("Create Cell");
         mapJButton.setFocusable(false);
@@ -209,19 +196,6 @@ public class UtilityToolbar extends javax.swing.JPanel {
             }
         });
         mapJButton.getAccessibleContext().setAccessibleDescription("");
-
-        worldJButton.setToolTipText("Create World");
-        worldJButton.setFocusable(false);
-        worldJButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        worldJButton.setMaximumSize(new Dimension(32, 32));
-        worldJButton.setMinimumSize(new Dimension(32, 32));
-        worldJButton.setPreferredSize(new Dimension(32, 32));
-        worldJButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        worldJButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                worldJButtonActionPerformed(evt);
-            }
-        });
 
         layerJButton.setToolTipText("Create Cell Layer");
         layerJButton.setFocusable(false);
@@ -327,55 +301,16 @@ public class UtilityToolbar extends javax.swing.JPanel {
             }
         });
 
-        labJButton.setToolTipText("Open the Laboratory");
-        labJButton.setFocusable(false);
-        labJButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        labJButton.setMaximumSize(new Dimension(32, 32));
-        labJButton.setMinimumSize(new Dimension(32, 32));
-        labJButton.setPreferredSize(new Dimension(32, 32));
-        labJButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        labJButton.addActionListener(new ActionListener() {
+        lightJButton.setToolTipText("Create a Light Source");
+        lightJButton.setFocusable(false);
+        lightJButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        lightJButton.setMaximumSize(new Dimension(32, 32));
+        lightJButton.setMinimumSize(new Dimension(32, 32));
+        lightJButton.setPreferredSize(new Dimension(32, 32));
+        lightJButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        lightJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                labJButtonActionPerformed(evt);
-            }
-        });
-
-        scriptJButton.setToolTipText("Import a Script");
-        scriptJButton.setFocusable(false);
-        scriptJButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        scriptJButton.setMaximumSize(new Dimension(32, 32));
-        scriptJButton.setMinimumSize(new Dimension(32, 32));
-        scriptJButton.setPreferredSize(new Dimension(32, 32));
-        scriptJButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        scriptJButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                scriptJButtonActionPerformed(evt);
-            }
-        });
-
-        pictureJButton.setToolTipText("Import Images");
-        pictureJButton.setFocusable(false);
-        pictureJButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        pictureJButton.setMaximumSize(new Dimension(32, 32));
-        pictureJButton.setMinimumSize(new Dimension(32, 32));
-        pictureJButton.setPreferredSize(new Dimension(32, 32));
-        pictureJButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        pictureJButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                pictureJButtonActionPerformed(evt);
-            }
-        });
-
-        sumJButton.setToolTipText("View File Checksums");
-        sumJButton.setFocusable(false);
-        sumJButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        sumJButton.setMaximumSize(new Dimension(32, 32));
-        sumJButton.setMinimumSize(new Dimension(32, 32));
-        sumJButton.setPreferredSize(new Dimension(32, 32));
-        sumJButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        sumJButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                sumJButtonActionPerformed(evt);
+                lightJButtonActionPerformed(evt);
             }
         });
 
@@ -385,38 +320,22 @@ public class UtilityToolbar extends javax.swing.JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGap(0, 32, Short.MAX_VALUE)
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGap(0, 32, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void mapJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_mapJButtonActionPerformed
+        //
+        final RoomEditor maker = new RoomEditor(editor, delegate, new Room(), true);
+        maker.setLocationRelativeTo(editor);
+        maker.setVisible(true);
 
-        // Show the map editor
-        final World world = editor.getCanvas().getWorld();
-
-        if (world != null) {
-
-            //
-            final WorldCellEditor maker = new WorldCellEditor(editor, delegate, new WorldCell(world), true);
-            maker.setLocationRelativeTo(editor);
-            maker.setVisible(true);
-
-            // Dispose of it
-            maker.dispose();
-        } else {
-
-            //
-            final String msg = "Cannot complete action.\nThere is not an active World on the canvas.";
-
-            // Show failure Dialog
-            JOptionPane.showMessageDialog(editor, msg);
-        }
+        // Dispose of it
+        maker.dispose();
     }//GEN-LAST:event_mapJButtonActionPerformed
 
     private void zoneJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_zoneJButtonActionPerformed
@@ -426,31 +345,21 @@ public class UtilityToolbar extends javax.swing.JPanel {
     private void layerJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_layerJButtonActionPerformed
 
         // Show the layer editor
-        final World world = editor.getCanvas().getWorld();
-        final WorldCell map = editor.getCanvas().getMap();
+        final Room map = editor.getCanvas().getMap();
 
-        if (world != null) {
-            if (map != null) {
+        if (map != null) {
 
-                //
-                final WorldCellLayerEditor maker = new WorldCellLayerEditor(editor, delegate, map, null, false, true);
-                maker.setLocationRelativeTo(editor);
-                maker.setVisible(true);
+            //
+            final LayerEditor maker = new LayerEditor(editor, delegate, map, new RoomLayer(map, ""), false, true);
+            maker.setLocationRelativeTo(editor);
+            maker.setVisible(true);
 
-                // Dispose of it
-                maker.dispose();
-            } else {
-
-                // Show error message
-                final String msg = "Cannot complete action.\nThere is not an active map on the canvas.";
-
-                // Failure to apply change to canvas
-                JOptionPane.showMessageDialog(editor, msg);
-            }
+            // Dispose of it
+            maker.dispose();
         } else {
 
             // Show error message
-            final String msg = "Cannot complete action.\nThere is not an active world on the canvas.";
+            final String msg = "Cannot complete action.\nThere is not an active map on the canvas.";
 
             // Failure to apply change to canvas
             JOptionPane.showMessageDialog(editor, msg);
@@ -470,24 +379,12 @@ public class UtilityToolbar extends javax.swing.JPanel {
 
     private void actorJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_actorJButtonActionPerformed
 
-        // Show the actor editor
-        final ActorEditor maker = new ActorEditor(editor, delegate, null, true);
-        maker.setLocationRelativeTo(editor);
-        maker.setVisible(true);
-
-        // Dispose of it
-        maker.dispose();
+        // @NOT AVAILABLE YET
     }//GEN-LAST:event_actorJButtonActionPerformed
 
     private void itemJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_itemJButtonActionPerformed
 
-        // Show the item editor
-        final ItemEditor maker = new ItemEditor(editor, delegate, new Weapon(), true);
-        maker.setLocationRelativeTo(editor);
-        maker.setVisible(true);
-
-        // Dispose of it
-        maker.dispose();
+        // @NOT AVAILABLE YET
     }//GEN-LAST:event_itemJButtonActionPerformed
 
     private void backdropJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_backdropJButtonActionPerformed
@@ -523,93 +420,33 @@ public class UtilityToolbar extends javax.swing.JPanel {
         maker.dispose();
     }//GEN-LAST:event_packageJButtonActionPerformed
 
-    private void worldJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_worldJButtonActionPerformed
-
-        // Show the world editor
-        final WorldEditor maker = new WorldEditor(editor, delegate, new World(), true);
-        maker.setLocationRelativeTo(editor);
-        maker.setVisible(true);
-
-        // Dispose of it
-        maker.dispose();
-    }//GEN-LAST:event_worldJButtonActionPerformed
-
-    private void labJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_labJButtonActionPerformed
-
-        // Show the Template Selector; basically it sets up the lab with the chosen world and chosen map to mimic in the actual test lab.
-        // Ill try to include a map that is basically empty in a default world in the base archives. So you dont actually have to make a map to goto the test lab
-        final TemplateSelector selector = new TemplateSelector(editor, delegate, true);
-        selector.setLocationRelativeTo(editor);
-        selector.setVisible(true);
-
-        // Dialog will take its course with user input
-        final World world = selector.getWorld();
-        final WorldCell map = selector.getMap();
+    private void lightJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_lightJButtonActionPerformed
+        // Show the layer editor
+        final Room map = editor.getCanvas().getMap();
 
         //
-        selector.dispose();
+        if (map != null) {
+            
+            //
+            final LightEditor maker = new LightEditor(editor, delegate, map, new LightSource(0, 0, 15, 0, 0), true);
+            maker.setLocationRelativeTo(editor);
+            maker.setVisible(true);
 
-        // They must both exist
-        if (world != null && map != null) {
-
-            // Show the actual Test Lab
-            final Laboratory laboratory = new Laboratory(editor, delegate, world, map, true);
-            laboratory.setLocationRelativeTo(editor);
-            laboratory.setVisible(true);
-
-            // Dispose of the Laboratory after the user hits the Done button
-            laboratory.dispose();
+            //
+            maker.dispose();
         }
-    }//GEN-LAST:event_labJButtonActionPerformed
+    }//GEN-LAST:event_lightJButtonActionPerformed
 
-    private void scriptJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_scriptJButtonActionPerformed
-
-        // Show the script editor
-        final ScriptEditor maker = new ScriptEditor(editor, delegate, null, true);
-        maker.setLocationRelativeTo(editor);
-        maker.setVisible(true);
-
-        // Dialog will take its course with user input
-        maker.dispose();
-    }//GEN-LAST:event_scriptJButtonActionPerformed
-
-    private void pictureJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_pictureJButtonActionPerformed
-
-        // TODO add your handling code here:
-        final PackageEditor importer = new PackageEditor(editor, delegate, null, true);
-        importer.setLocationRelativeTo(editor);
-        importer.setVisible(true);
-
-        //
-        importer.dispose();
-    }//GEN-LAST:event_pictureJButtonActionPerformed
-
-    private void sumJButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sumJButtonActionPerformed
-
-        // Dispose of old one
-        if (viewer != null) {
-            viewer.dispose();
-        }
-
-        // TODO add your handling code here:
-        viewer = new ChecksumViewer(editor, delegate, false);
-        viewer.setLocationRelativeTo(editor);
-        viewer.setVisible(true);
-    }//GEN-LAST:event_sumJButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton actorJButton;
     private JButton animationJButton;
     private JButton backdropJButton;
     private JButton itemJButton;
-    private JButton labJButton;
     private JButton layerJButton;
+    private JButton lightJButton;
     private JButton mapJButton;
     private JButton packageJButton;
-    private JButton pictureJButton;
-    private JButton scriptJButton;
-    private JButton sumJButton;
     private JButton tilesetJButton;
-    private JButton worldJButton;
     private JButton zoneJButton;
     // End of variables declaration//GEN-END:variables
 }

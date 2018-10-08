@@ -22,9 +22,8 @@ package Editor.renderer;
 
 import core.world.Actor;
 import core.world.Backdrop;
-import core.world.WorldCellLayer;
-import core.world.WorldCell;
-import core.world.World;
+import core.world.RoomLayer;
+import core.world.Room;
 import core.world.WorldTile;
 import io.resource.ResourceReader;
 import java.awt.Component;
@@ -72,22 +71,19 @@ public class WorldTreeRenderer extends DefaultTreeCellRenderer implements TreeCe
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
         // Super call
-        Component component = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+        final Component component = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
         // The Value
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-        Object object = node.getUserObject();
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+        final Object object = node.getUserObject();
 
         // Paint Icon based on userObject type
-        if (object instanceof World) {
-            setIcon(iconWorld);
-            setText(((World) object).getDisplayName());
-        } else if (object instanceof WorldCell) {
+        if (object instanceof Room) {
             setIcon(iconMap);
-            setText(((WorldCell) object).getDisplayName());
-        } else if (object instanceof WorldCellLayer) {
+            setText(((Room) object).getDisplayName());
+        } else if (object instanceof RoomLayer) {
             setIcon(iconLayer);
-            setText(((WorldCellLayer) object).getDisplayName());
+            setText(((RoomLayer) object).getDisplayName());
         } else if (object instanceof Actor) {
             setIcon(iconActor);
             setText(((Actor) object).getDisplayName());
@@ -96,7 +92,8 @@ public class WorldTreeRenderer extends DefaultTreeCellRenderer implements TreeCe
             // Momentary cast
             final WorldTile tile = (WorldTile) object;
             setIcon(iconTile);
-            setText(tile.getTileset().getDisplayName() + ": " + tile.getIndexOfTileset());
+            setText(tile.getTileset().getDisplayName() + ": " + tile.getIndexOfTileset()
+             + "[" + tile.getX() + ", " + tile.getY() + "]");
         } else if (object instanceof Backdrop) {
             setIcon(iconBackground);
             setText(((Backdrop) object).getDisplayName());

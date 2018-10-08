@@ -126,6 +126,7 @@ public class Grid {
                 manet.draw(rectangleArea);
             }
             manet.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            manet.setStroke(new BasicStroke());
         }
     }
 

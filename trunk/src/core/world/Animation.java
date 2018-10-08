@@ -18,12 +18,14 @@
  */
 package core.world;
 
+import core.coll.CollisionWrapper;
 import core.event.AnimationEvent;
 import core.event.AnimationListener;
 import io.resource.ResourceProducer;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,15 +45,19 @@ import javax.swing.event.EventListenerList;
 public class Animation extends Illustration {
 
     // Variable Declaration
+    // Imported Project Classes
+    private CollisionWrapper wrapper;
+    // Java native classes
     private BufferedImage[] subImages;
     private EventListenerList listenerList;
     private Timer timer;
     // Data types
     private boolean borderDrawn;
+    private boolean wrapperDrawn;
     private float rotation;
     private int shapeType;
     private int repeatCycles;
-    // By default all animation will animate at 1/7 frame a second. (FOR NOW)
+    // By default all animation will advance at 1/7 frame a second. (FOR NOW)
     protected int delay = 142;
     private int index;
     private int width;
@@ -91,7 +97,7 @@ public class Animation extends Illustration {
                     if (repeatCycles == -1 || repeatCycles > 0 && delay > 0) {
 
                         // Change the Image over time
-                        animate();
+                        advance();
                     }
                 }
             }
@@ -121,6 +127,9 @@ public class Animation extends Illustration {
         copy.setDelay(delay);
         copy.setAttributeMap(attributes);
 
+        // Copy the wrapper as well
+        copy.wrapper = wrapper;
+
         //
         copy.validate();
 
@@ -128,7 +137,7 @@ public class Animation extends Illustration {
         return copy;
     }
 
-    private void animate() {
+    public void advance() {
 
         //
         if (subImages == null) {
@@ -153,6 +162,31 @@ public class Animation extends Illustration {
         }
     }
 
+    public void rewind() {
+
+        //
+        if (subImages == null) {
+            return;
+        }
+
+        // Restart Animation code
+        if (index <= 0) {
+
+            // Restart
+            index = subImages.length - 1;
+
+            // Fire end of Animation Event
+            fireEndEvent();
+        } else {
+
+            // Increment the animation index
+            index--;
+
+            // Fire the step event to signal that this animation should change images
+            fireStepEvent();
+        }
+    }
+
     @Override
     public void validate() {
 
@@ -161,6 +195,11 @@ public class Animation extends Illustration {
 
             // Pre checks
             if (blockWidth > 0 && blockHeight > 0) {
+
+                // OOB cases
+                if (blockYOffset >= blockHeight || blockXOffset >= blockWidth) {
+                    return;
+                }
 
                 // Recreate entirely
                 subImages = ResourceProducer.createImages(picture, attributes);
@@ -182,6 +221,11 @@ public class Animation extends Illustration {
         final int imageWidth = (image == null) ? 0 : image.getWidth();
         final int imageHeight = (image == null) ? 0 : image.getHeight();
 
+        //
+        if (imageWidth == 0 || imageHeight == 0) {
+            return null;
+        }
+
         // Our output image
         final BufferedImage output = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
 
@@ -195,19 +239,13 @@ public class Animation extends Illustration {
         // Setup the initial Transformations
         //final AffineTransform transformOriginal = manet.getTransform();
         //final AffineTransform transformImage = new AffineTransform();
-
         // Begin the Transformation
         //transformImage.setToTranslation(point.x, point.y);
-
         // Draw the actual image
         manet.drawImage(image, 0, 0, obs);
 
         // Return to the original transform
         //manet.setTransform(transformOriginal);
-
-        // Return the Alpha Composite to 1.0f (Fully Visible);
-        manet.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-
         // Draw the border.
         if (borderDrawn) {
 
@@ -215,8 +253,28 @@ public class Animation extends Illustration {
             manet.setColor(Color.BLACK);
             manet.drawRect(0, 0, imageWidth - 1, imageHeight - 1);
         }
+        // Return the Alpha Composite to 1.0f (Fully Visible);
+        manet.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
         //
+        if (wrapperDrawn) {
+
+            // Grab those polygons
+            if (wrapper != null) {
+
+                //
+                final Polygon[] polygons = wrapper.getPolygonsForIndex(index);
+
+                //
+                for (Polygon p : polygons) {
+                    manet.setColor(Color.RED);
+                    manet.fill(p);
+                }
+            }
+        }
+
+        //
+        manet.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         manet.dispose();
 
         //
@@ -242,7 +300,7 @@ public class Animation extends Illustration {
     }
 
     public int length() {
-        return subImages == null ? -1 : subImages.length;
+        return subImages == null ? 0 : subImages.length;
     }
 
     // Questions
@@ -269,12 +327,27 @@ public class Animation extends Illustration {
     }
 
     // Mutators
+    public boolean isDrawingWrapper() {
+        return wrapperDrawn;
+    }
+
     public BufferedImage getImageAt(int newIndex) throws ArrayIndexOutOfBoundsException {
         return (subImages == null || subImages.length == 0) ? null : subImages[newIndex];
     }
 
     public BufferedImage getCurrentImage() {
         return (subImages == null || subImages.length == 0) ? null : subImages[index];
+    }
+
+    // Does not advance the animation; just gives the next image up
+    public BufferedImage getNextImage() {
+        //
+        return subImages == null || subImages.length <= 0 ? null : subImages[index + 1 > subImages.length ? 0 : index + 1];
+    }
+
+    public BufferedImage getPreviousImage() {
+        //
+        return subImages == null || subImages.length <= 0 ? null : subImages[index - 1 <= 0 ? subImages.length : index - 1];
     }
 
     public BufferedImage[] getImages() {
@@ -293,12 +366,20 @@ public class Animation extends Illustration {
         return shapeType;
     }
 
+    public CollisionWrapper getWrapper() {
+        return wrapper;
+    }
+
     public float getRotation() {
         return rotation;
     }
 
     public int getCycles() {
         return repeatCycles;
+    }
+
+    public void setWrapperDrawn(boolean wrapperDrawn) {
+        this.wrapperDrawn = wrapperDrawn;
     }
 
     public void setDelay(int delay) {
@@ -324,6 +405,10 @@ public class Animation extends Illustration {
 
     public void setPaintShape(boolean newState) {
         borderDrawn = newState;
+    }
+
+    public void setWrapper(CollisionWrapper wrapper) {
+        this.wrapper = wrapper;
     }
 
     private void fireEndEvent() {

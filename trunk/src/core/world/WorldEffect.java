@@ -20,6 +20,7 @@
 package core.world;
 
 import java.awt.Graphics;
+import java.awt.Polygon;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 
@@ -65,6 +66,10 @@ public class WorldEffect extends WorldObject {
     }
     
     @Override public Rectangle2D.Float getBounds() {
+        return null;
+    }
+    
+    @Override public Polygon getPreciseBounds() {
         return null;
     }
 }

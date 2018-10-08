@@ -57,22 +57,20 @@ public class TilesetManager extends javax.swing.JPanel implements DelegateListen
     // Swing Classes
     private FaustEditor editor;
     private ResourceDelegate delegate;
-    private TileSelector tileSelector;
-    private WorldCanvas worldCanvas;
+    private RoomCanvas worldCanvas;
     //
     private DefaultMutableTreeNode defaultRootNode;
     private DefaultMutableTreeNode defaultTilesetNode;
     private DefaultTreeModel defaultTreeModel;
     // End of Variable Declaration
 
-    public TilesetManager(FaustEditor editor, TileSelector tileSelector, ResourceDelegate delegate) {
+    public TilesetManager(FaustEditor editor, ResourceDelegate delegate) {
 
         // Begin Generated GUI Code:
         initComponents();
 
         // Set Values
         this.editor = editor;
-        this.tileSelector = tileSelector;
         this.delegate = delegate;
 
         // Then start
@@ -260,13 +258,6 @@ public class TilesetManager extends javax.swing.JPanel implements DelegateListen
         return graphicJTree;
     }
 
-    public void setWorldCanvas(WorldCanvas newCanvas) {
-        worldCanvas = newCanvas;
-        if (tileSelector != null) {
-            tileSelector.setWorldCanvas(newCanvas);
-        }
-    }
-
     /**
      * This method is called from within the constructor to Start the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -373,15 +364,22 @@ public class TilesetManager extends javax.swing.JPanel implements DelegateListen
 
                 if (eventButton == MouseEvent.BUTTON1) {
                     if (clickCount == 1) {
+                        //
+                        TileSelector tileSelector = editor.getTileSelector();
 
+                        // First things first is to make sure the worldSplitPane has the tileSelector as its
+                        // second component
+                        JSplitPane pane = editor.getWorldSplitPane();
+                        if (pane.getBottomComponent() == null) {
+                            pane.setBottomComponent(tileSelector.getComponent());
+                        }
+
+                        // ----->
                         // Adjust the selector
                         tileSelector.setTileset(tileset);
-                        tileSelector.setWorldCanvas(worldCanvas);
 
                         //
-                        final JSplitPane split = editor.getResourceSplitPane();
-                        split.setLeftComponent(tileSelector.getComponent());
-                        split.revalidate();
+                        editor.update();
                     } else if (clickCount == 2) {
 
                         // Double click to show graphicset editor

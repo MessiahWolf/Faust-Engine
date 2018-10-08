@@ -85,7 +85,8 @@ public class StatusBar extends javax.swing.JPanel implements DelegateListener {
         iconToolOff = ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-visible-off18.png");
 
         // Default
-        conflictionJButton.setIcon(iconConflict);
+        conflictionJButton.setIcon(iconInfo);
+       // conflictionJButton.setHorizontalTextPosition(SwingConstants.TRAILING);
         canvasJButton.setIcon(iconToolOn);
 
         //
@@ -96,9 +97,9 @@ public class StatusBar extends javax.swing.JPanel implements DelegateListener {
         }
 
         //
-        add(Box.createHorizontalGlue());
-        add(referenceJLabel);
-        add(new Box.Filler(fillerDimension, fillerDimension, fillerDimension));
+        //add(Box.createHorizontalGlue());
+        //add(referenceJLabel);
+        //add(new Box.Filler(fillerDimension, fillerDimension, fillerDimension));
     }
 
     /**
@@ -110,14 +111,9 @@ public class StatusBar extends javax.swing.JPanel implements DelegateListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        canvasJButton = new javax.swing.JButton();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+        canvasJButton = new javax.swing.JButton();
         conflictionJButton = new javax.swing.JButton();
-
-        setMaximumSize(new java.awt.Dimension(32767, 24));
-        setMinimumSize(new java.awt.Dimension(32767, 24));
-        setPreferredSize(new java.awt.Dimension(32767, 24));
-        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
 
         canvasJButton.setToolTipText("Toggle canvas tool visibility");
         canvasJButton.setContentAreaFilled(false);
@@ -130,14 +126,18 @@ public class StatusBar extends javax.swing.JPanel implements DelegateListener {
                 canvasJButtonActionPerformed(evt);
             }
         });
-        add(canvasJButton);
-        add(filler1);
+
+        setMaximumSize(new java.awt.Dimension(32767, 24));
+        setMinimumSize(new java.awt.Dimension(32767, 24));
+        setPreferredSize(new java.awt.Dimension(32767, 24));
+        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
 
         conflictionJButton.setContentAreaFilled(false);
         conflictionJButton.setFocusPainted(false);
-        conflictionJButton.setMaximumSize(new java.awt.Dimension(24, 24));
+        conflictionJButton.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        conflictionJButton.setMaximumSize(new java.awt.Dimension(156, 24));
         conflictionJButton.setMinimumSize(new java.awt.Dimension(24, 24));
-        conflictionJButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        conflictionJButton.setPreferredSize(new java.awt.Dimension(196, 24));
         conflictionJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 conflictionJButtonActionPerformed(evt);
@@ -188,7 +188,7 @@ public class StatusBar extends javax.swing.JPanel implements DelegateListener {
         final DataRef source = (DataRef) evt.getSource();
 
         //
-        referenceJLabel.setText("Loading Resource: " + source.getEditorName());
+        conflictionJButton.setText("Loading Resource: " + source.getEditorName());
 
         //
         javax.swing.Timer timer = new javax.swing.Timer(2000, new ActionListener() {
@@ -196,11 +196,11 @@ public class StatusBar extends javax.swing.JPanel implements DelegateListener {
             public void actionPerformed(ActionEvent evt) {
 
                 // Clear the text
-                referenceJLabel.setText("");
+                conflictionJButton.setText("");
+                conflictionJButton.setEnabled(true);
                 referenceJLabel.setIcon(null);
             }
-        }) {
-        };
+        });
         timer.setRepeats(false);
         timer.start();
 
@@ -209,8 +209,8 @@ public class StatusBar extends javax.swing.JPanel implements DelegateListener {
             conflictionJButton.setEnabled(true);
             conflictionJButton.setIcon(iconConflict);
         } else {
-            conflictionJButton.setEnabled(false);
-            conflictionJButton.setIcon(null);
+            //conflictionJButton.setEnabled(false);
+            //conflictionJButton.setIcon(null);
         }
     }
 
@@ -231,16 +231,16 @@ public class StatusBar extends javax.swing.JPanel implements DelegateListener {
     public void dataLoaded(DelegateEvent evt) {
 
         //
-        referenceJLabel.setIcon(iconInfo);
-        referenceJLabel.setText("Resource Check Complete");
+        conflictionJButton.setIcon(iconInfo);
+        conflictionJButton.setText("Resources Loaded.");
 
         //
         if (delegate.detectConflictions().length > 0) {
             conflictionJButton.setEnabled(true);
             conflictionJButton.setIcon(iconConflict);
         } else {
-            conflictionJButton.setEnabled(false);
-            conflictionJButton.setIcon(null);
+            //conflictionJButton.setEnabled(false);
+            //conflictionJButton.setIcon(null);
         }
     }
 

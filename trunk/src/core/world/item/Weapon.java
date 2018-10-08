@@ -7,6 +7,7 @@ package core.world.item;
 import core.world.WorldAction;
 import core.world.Animation;
 import core.world.WorldItem;
+import java.awt.Polygon;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class Weapon extends WorldItem {
         // Script must exist for these options
         if (script != null) {
             attributeMap.put("scriptEditorId", script.getReferenceID());
-            attributeMap.put("scriptPackageId", script.getPackageId());
+            attributeMap.put("scriptPackageId", script.getPackageID());
         }
 
         // Stat map
@@ -112,6 +113,10 @@ public class Weapon extends WorldItem {
         }
 
         // No bounds
+        return null;
+    }
+    
+    @Override public Polygon getPreciseBounds() {
         return null;
     }
 }

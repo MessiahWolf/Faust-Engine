@@ -34,7 +34,7 @@ public class Backdrop extends Illustration {
     // Java Native Classes
     private Color color;
     // Project Classes
-    private WorldCell map;
+    private Room map;
     // Data Types
     protected boolean stretch = false;
     // End of Variable Declaration
@@ -78,10 +78,21 @@ public class Backdrop extends Illustration {
 
     @Override
     public BufferedImage draw(ImageObserver obs, float alpha) {
+        
+        //
+        if (visible == false) {
+            return null;
+        }
 
         //
         final int totalWidth = blockXOffset + (blockRows * (blockWidth + blockHGap));
         final int totalHeight = blockYOffset + (blockColumns * (blockHeight + blockVGap));
+        
+        // Kick out if no image
+        if (totalWidth <= 0 || totalHeight <= 0) {
+            return null;
+        }
+
         //
         final BufferedImage image = new BufferedImage(totalWidth, totalHeight, BufferedImage.TYPE_INT_ARGB);
 
@@ -96,13 +107,13 @@ public class Backdrop extends Illustration {
 
             // Begin drawing the attributeRows and attributeColumns;
             if (picture.getImage() != null) {
-
+                
                 // Match block rows and columns
                 for (int i = 0; i < blockRows; i++) {
                     for (int j = 0; j < blockColumns; j++) {
-
+                        
                         // Draw the image adjusted to offsets
-                        manet.drawImage(picture.getImage(), blockXOffset + (i * blockWidth), blockYOffset + (j * blockHeight), obs);
+                        manet.drawImage(picture.getImage(), blockXOffset + (i * (blockWidth + blockHGap)), blockYOffset + (j * (blockHeight + blockVGap)), obs);
                     }
                 }
             }
@@ -116,27 +127,17 @@ public class Backdrop extends Illustration {
         return image;
     }
 
-    public void adapt(int width, int height) {
-
-        //
-        stretch = true;
-
-        //
-        blockRows = (width / blockWidth) + 1;
-        blockColumns = (height / blockHeight) + 1;
-
-        //
-        System.err.println("Width: " + width);
-        System.err.println("Height: " + height);
-        System.out.println("Block Width: " + blockWidth);
-        System.out.println("Block Height: " + blockHeight);
-    }
-
     @Override
     public void updateAttributes() {
         super.updateAttributes();
 
         attributes.put("stretch", stretch);
+        
+        // Special for backdrops
+        if (stretch) {
+            //blockRows = 1;
+            //blockColumns = 1;
+        }
     }
 
     @Override
@@ -153,7 +154,7 @@ public class Backdrop extends Illustration {
         return color;
     }
 
-    public WorldCell getMap() {
+    public Room getMap() {
         return map;
     }
 
@@ -164,9 +165,21 @@ public class Backdrop extends Illustration {
 
     public void setStretching(boolean stretch) {
         this.stretch = stretch;
+        
+        // Special for backdrops
+        if (stretch) {
+            blockRows = 1;
+            blockColumns = 1;
+        }
     }
 
-    public void setMap(WorldCell map) {
+    public void setMap(Room map) {
         this.map = map;
+        
+        // This won't really matter.
+        if (stretch) {
+            blockRows = map.getWidth() / picture.getWidth() + 1;
+            blockColumns = map.getHeight() / picture.getHeight() + 1;
+        }
     }
 }

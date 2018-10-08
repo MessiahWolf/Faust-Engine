@@ -30,6 +30,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.JColorChooser;
 import javax.swing.ListSelectionModel;
 import Editor.renderer.DataListRenderer;
+import java.awt.Dimension;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -39,14 +41,14 @@ public class ResourceSelector extends javax.swing.JDialog {
 
     // Variable Declaration
     private Class classFilter;
-    private Color backgroundColor = new Color(240, 240, 240);
+    private final Color backgroundColor = new Color(240, 240, 240);
     // Java Classes
     private DefaultListModel packageModel;
     private DefaultListModel resourceModel;
     // Project Classes
     private ImagePanel imageJPanel;
     private WorldResource resource;
-    private ResourceDelegate delegate;
+    private final ResourceDelegate delegate;
     private DataPackage pack;
     // End of Variable Declaration
 
@@ -79,8 +81,8 @@ public class ResourceSelector extends javax.swing.JDialog {
         // If there are any plugins
         if (plugins != null) {
             //
-            for (int i = 0; i < plugins.length; i++) {
-                packageModel.addElement(plugins[i]);
+            for (DataPackage plugin : plugins) {
+                packageModel.addElement(plugin);
             }
         }
 
@@ -88,11 +90,11 @@ public class ResourceSelector extends javax.swing.JDialog {
         final Class closs = getClass();
 
         //
-        backgroundJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-chooser16.png"));
+        //textileJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-color-palette24.png"));
         //backgroundJButton.setContentAreaFilled(false);
 
         //
-        informationJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-view18.png"));
+        //informationJButton.setIcon(ResourceReader.readClassPathIcon(closs, "/Editor/icons/icon-view18.png"));
         //informationJButton.setFocusPainted(false);
         //informationJButton.setContentAreaFilled(false);
 
@@ -112,7 +114,9 @@ public class ResourceSelector extends javax.swing.JDialog {
 
         // Override the default paint operations for imageJPanel
         imageJPanel = new ImagePanel(contentJScrollPane);
+        imageJPanel.setPreferredSize(new Dimension(240, 240));
         imageJPanel.setShowTextile(true);
+        imageJPanel.setShowImage(true);
 
         // Change the viewport of jScrollPane2
         contentJScrollPane.setViewportView(imageJPanel);
@@ -168,53 +172,45 @@ public class ResourceSelector extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        filterJLabel = new javax.swing.JLabel();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(2, 0), new java.awt.Dimension(2, 0), new java.awt.Dimension(2, 32767));
+        filterJField = new javax.swing.JTextField();
+        filler6 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+        informationJButton = new javax.swing.JButton();
+        filler8 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
+        textileJButton = new javax.swing.JButton();
         contentJScrollPane = new javax.swing.JScrollPane();
         buttonJPanel = new javax.swing.JPanel();
-        filterJLabel = new javax.swing.JLabel();
-        filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
-        filterJField = new javax.swing.JTextField();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
-        informationJButton = new javax.swing.JButton();
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
-        backgroundJButton = new javax.swing.JButton();
-        filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
-        chooseJButton = new javax.swing.JButton();
+        acceptJButton = new javax.swing.JButton();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 0), new java.awt.Dimension(8, 32767));
-        cancelJButton = new javax.swing.JButton();
+        declineJButton = new javax.swing.JButton();
         mainJTabbedPane = new javax.swing.JTabbedPane();
         packageJScrollPane = new javax.swing.JScrollPane();
         packageJList = new javax.swing.JList();
         resourceJScrollPane = new javax.swing.JScrollPane();
         resourceJList = new javax.swing.JList();
-        nullJLabel2 = new javax.swing.JLabel();
-        nullJLabel1 = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Resource Selecting");
-        setMinimumSize(new java.awt.Dimension(560, 396));
+        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
 
-        contentJScrollPane.setPreferredSize(new java.awt.Dimension(288, 281));
-
-        buttonJPanel.setPreferredSize(new java.awt.Dimension(100, 26));
-        buttonJPanel.setLayout(new javax.swing.BoxLayout(buttonJPanel, javax.swing.BoxLayout.LINE_AXIS));
-
-        filterJLabel.setText("Filtered to:");
+        filterJLabel.setText("Filter:");
         filterJLabel.setEnabled(false);
-        filterJLabel.setMaximumSize(new java.awt.Dimension(53, 26));
-        filterJLabel.setMinimumSize(new java.awt.Dimension(53, 26));
-        filterJLabel.setPreferredSize(new java.awt.Dimension(53, 26));
-        buttonJPanel.add(filterJLabel);
-        buttonJPanel.add(filler5);
+        filterJLabel.setMaximumSize(new java.awt.Dimension(40, 26));
+        filterJLabel.setMinimumSize(new java.awt.Dimension(40, 26));
+        filterJLabel.setPreferredSize(new java.awt.Dimension(40, 26));
+        jPanel1.add(filterJLabel);
+        jPanel1.add(filler1);
 
         filterJField.setEditable(false);
         filterJField.setEnabled(false);
-        filterJField.setMaximumSize(new java.awt.Dimension(128, 26));
-        filterJField.setMinimumSize(new java.awt.Dimension(128, 26));
-        filterJField.setPreferredSize(new java.awt.Dimension(128, 26));
-        buttonJPanel.add(filterJField);
-        buttonJPanel.add(filler2);
+        filterJField.setMaximumSize(new java.awt.Dimension(108, 26));
+        filterJField.setMinimumSize(new java.awt.Dimension(108, 26));
+        filterJField.setPreferredSize(new java.awt.Dimension(108, 26));
+        jPanel1.add(filterJField);
+        jPanel1.add(filler6);
 
-        informationJButton.setToolTipText("Change Panel Background Color");
+        informationJButton.setToolTipText("View File Properties");
         informationJButton.setMaximumSize(new java.awt.Dimension(26, 26));
         informationJButton.setMinimumSize(new java.awt.Dimension(26, 26));
         informationJButton.setPreferredSize(new java.awt.Dimension(26, 26));
@@ -223,43 +219,52 @@ public class ResourceSelector extends javax.swing.JDialog {
                 informationJButtonActionPerformed(evt);
             }
         });
-        buttonJPanel.add(informationJButton);
-        buttonJPanel.add(filler1);
+        jPanel1.add(informationJButton);
+        jPanel1.add(filler8);
 
-        backgroundJButton.setToolTipText("Change Panel Background Color");
-        backgroundJButton.setMaximumSize(new java.awt.Dimension(26, 26));
-        backgroundJButton.setMinimumSize(new java.awt.Dimension(26, 26));
-        backgroundJButton.setPreferredSize(new java.awt.Dimension(26, 26));
-        backgroundJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                backgroundJButtonActionPerformed(evt);
+        textileJButton.setToolTipText("Change Panel Background Color");
+        textileJButton.setMaximumSize(new java.awt.Dimension(26, 26));
+        textileJButton.setMinimumSize(new java.awt.Dimension(26, 26));
+        textileJButton.setPreferredSize(new java.awt.Dimension(26, 26));
+        textileJButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                textileJButtonMouseClicked(evt);
             }
         });
-        buttonJPanel.add(backgroundJButton);
-        buttonJPanel.add(filler4);
+        jPanel1.add(textileJButton);
 
-        chooseJButton.setText("Choose");
-        chooseJButton.setMaximumSize(new java.awt.Dimension(88, 26));
-        chooseJButton.setMinimumSize(new java.awt.Dimension(88, 26));
-        chooseJButton.setPreferredSize(new java.awt.Dimension(88, 26));
-        chooseJButton.addActionListener(new java.awt.event.ActionListener() {
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Resource Selecting");
+        setMinimumSize(new java.awt.Dimension(522, 340));
+
+        contentJScrollPane.setPreferredSize(new java.awt.Dimension(288, 281));
+
+        buttonJPanel.setPreferredSize(new java.awt.Dimension(100, 26));
+        buttonJPanel.setLayout(new javax.swing.BoxLayout(buttonJPanel, javax.swing.BoxLayout.LINE_AXIS));
+        buttonJPanel.add(filler2);
+
+        acceptJButton.setText("Accept");
+        acceptJButton.setMaximumSize(new java.awt.Dimension(88, 26));
+        acceptJButton.setMinimumSize(new java.awt.Dimension(88, 26));
+        acceptJButton.setPreferredSize(new java.awt.Dimension(88, 26));
+        acceptJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chooseJButtonActionPerformed(evt);
+                acceptJButtonActionPerformed(evt);
             }
         });
-        buttonJPanel.add(chooseJButton);
+        buttonJPanel.add(acceptJButton);
         buttonJPanel.add(filler3);
 
-        cancelJButton.setText("Cancel");
-        cancelJButton.setMaximumSize(new java.awt.Dimension(88, 26));
-        cancelJButton.setMinimumSize(new java.awt.Dimension(88, 26));
-        cancelJButton.setPreferredSize(new java.awt.Dimension(88, 26));
-        cancelJButton.addActionListener(new java.awt.event.ActionListener() {
+        declineJButton.setText("Decline");
+        declineJButton.setMaximumSize(new java.awt.Dimension(88, 26));
+        declineJButton.setMinimumSize(new java.awt.Dimension(88, 26));
+        declineJButton.setPreferredSize(new java.awt.Dimension(88, 26));
+        declineJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelJButtonActionPerformed(evt);
+                declineJButtonActionPerformed(evt);
             }
         });
-        buttonJPanel.add(cancelJButton);
+        buttonJPanel.add(declineJButton);
 
         mainJTabbedPane.setPreferredSize(new java.awt.Dimension(242, 281));
 
@@ -297,46 +302,28 @@ public class ResourceSelector extends javax.swing.JDialog {
 
         mainJTabbedPane.addTab("Internal Resource List", resourceJScrollPane);
 
-        nullJLabel2.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        nullJLabel2.setText("Image View");
-        nullJLabel2.setEnabled(false);
-
-        nullJLabel1.setText("Showing All Imported resources for this Session");
-        nullJLabel1.setEnabled(false);
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(buttonJPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(nullJLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(mainJTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(contentJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGap(243, 243, 243)
-                                .addComponent(nullJLabel2)))))
-                .addContainerGap())
+                        .addComponent(contentJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(mainJTabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nullJLabel2)
-                    .addComponent(nullJLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(mainJTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(contentJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(11, 11, 11)
                 .addComponent(buttonJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -344,14 +331,15 @@ public class ResourceSelector extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cancelJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelJButtonActionPerformed
+    private void declineJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_declineJButtonActionPerformed
+        // Null resource out then close
+        resource = null;
 
         // Close this dialog
         setVisible(false);
-    }//GEN-LAST:event_cancelJButtonActionPerformed
+    }//GEN-LAST:event_declineJButtonActionPerformed
 
     private void resourceJListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_resourceJListValueChanged
-
         // Check for value is Adjusting
         if (!evt.getValueIsAdjusting()) {
 
@@ -375,17 +363,11 @@ public class ResourceSelector extends javax.swing.JDialog {
                 }
             }
 
-            // Change
-            resource = (WorldResource) resourceJList.getSelectedValue();
-
             // Solve for Animation (Listener)
-            if (resource instanceof Animation) {
-
-                //
-                resource = resource.reproduce();
+            if (resourceJList.getSelectedValue() instanceof Animation) {
 
                 // Animation cast
-                final Animation animation = (Animation) resource;
+                final Animation animation = (Animation) resourceJList.getSelectedValue();
 
                 // Remove and add
                 animation.removeAnimationListener(imageJPanel);
@@ -398,32 +380,23 @@ public class ResourceSelector extends javax.swing.JDialog {
             }
 
             // Change the contentPane according to resource type
-            imageJPanel.updatePanel(resource);
+            imageJPanel.updatePanel(resourceJList.getSelectedValue());
         }
     }//GEN-LAST:event_resourceJListValueChanged
 
-    private void chooseJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseJButtonActionPerformed
-
+    private void acceptJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptJButtonActionPerformed
         // @todo Resource could be null
-        if (resource != null) {
+        if (resourceJList.getSelectedValue() != null) {
 
             // Final check before closing
-            pack = delegate.getPackageForResource(resource);
+            pack = delegate.getPackageForResource((WorldResource) resourceJList.getSelectedValue());
 
             //
             setVisible(false);
         }
-    }//GEN-LAST:event_chooseJButtonActionPerformed
-
-    private void backgroundJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundJButtonActionPerformed
-
-        // TODO add your handling code here:
-        imageJPanel.setBackground(JColorChooser.showDialog(this, "Pick a color", backgroundColor));
-        imageJPanel.repaint();
-    }//GEN-LAST:event_backgroundJButtonActionPerformed
+    }//GEN-LAST:event_acceptJButtonActionPerformed
 
     private void packageJListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_packageJListValueChanged
-
         // TODO add your handling code here:
         resourceModel.clear();
 
@@ -437,14 +410,10 @@ public class ResourceSelector extends javax.swing.JDialog {
             final DataRef[] citations = pack.getCitations();
 
             // Iterate over the collection of citations
-            for (int i = 0; i < citations.length; i++) {
-
+            for (DataRef reference : citations) {
                 // grab the current Citation
-                final DataRef reference = citations[i];
-
                 // Check for filter
                 if (classFilter != null) {
-
                     // Add only of type filter
                     if (reference.getResource().getClass() == classFilter) {
 
@@ -452,7 +421,6 @@ public class ResourceSelector extends javax.swing.JDialog {
                         resourceModel.addElement(reference.getResource());
                     }
                 } else {
-
                     // Just add it for the no filter option
                     resourceModel.addElement(reference.getResource());
                 }
@@ -469,11 +437,7 @@ public class ResourceSelector extends javax.swing.JDialog {
             if (citations != null) {
 
                 // Iterate over the citations
-                for (int i = 0; i < citations.length; i++) {
-
-                    // Grab the current reference
-                    final Object reference = citations[i];
-
+                for (Object reference : citations) {
                     // Feed to list model
                     resourceModel.addElement(reference);
                 }
@@ -487,10 +451,10 @@ public class ResourceSelector extends javax.swing.JDialog {
     private void informationJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_informationJButtonActionPerformed
 
         // TODO add your handling code here:
-        if (resource != null) {
+        if (resourceJList.getSelectedValue() != null) {
 
             //
-            final ResourceViewer viewer = new ResourceViewer(this, resource, true);
+            final ResourceViewer viewer = new ResourceViewer(this, resourceJList.getSelectedValue(), true);
             viewer.setLocationRelativeTo(this);
             viewer.setVisible(true);
             viewer.dispose();
@@ -499,51 +463,80 @@ public class ResourceSelector extends javax.swing.JDialog {
 
     private void resourceJListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_resourceJListMouseClicked
 
-        // TODO add your handling code here:
+        //
+        final Object object = resourceJList.getSelectedValue();
+
+        //
+        if (object == null) {
+            return;
+        }
+
+        //
+        if (object instanceof WorldResource) {
+
+            //
+            resource = (WorldResource) object;
+
+            //
+            pack = delegate.getPackageForResource(resource);
+        }
+        
+        // Close on double click..
         if (evt.getClickCount() == 2) {
 
-            //
-            final Object object = resourceJList.getSelectedValue();
-
-            //
-            if (object == null) {
-                return;
-            }
-
-            //
-            if (object instanceof WorldResource) {
-
-                //
-                resource = (WorldResource) object;
-
-                //
-                pack = delegate.getPackageForResource(resource);
-
-                //
-                setVisible(false);
-            }
+            // After the double click we're done.
+            setVisible(false);
         }
     }//GEN-LAST:event_resourceJListMouseClicked
+
+    private void textileJButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_textileJButtonMouseClicked
+
+        //
+        final Color picked;
+
+        // TODO add your handling code here:
+        if (evt.getButton() == MouseEvent.BUTTON1) {
+
+            // TODO add your handling code here:
+            picked = JColorChooser.showDialog(this, "Change Background Color", imageJPanel.getTextileBackground());
+
+            // @Ternary
+            imageJPanel.setTextileBackground(picked == null ? Color.LIGHT_GRAY : picked);
+
+            //
+            imageJPanel.repaint();
+        } else if (evt.getButton() == MouseEvent.BUTTON3) {
+
+            //
+            picked = JColorChooser.showDialog(this, "Change Foreground Color", imageJPanel.getTextileForeground());
+
+            //
+            imageJPanel.setTextileForeground(picked == null ? Color.WHITE : picked);
+
+            //
+            imageJPanel.repaint();
+        }
+    }//GEN-LAST:event_textileJButtonMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton backgroundJButton;
+    private javax.swing.JButton acceptJButton;
     private javax.swing.JPanel buttonJPanel;
-    private javax.swing.JButton cancelJButton;
-    private javax.swing.JButton chooseJButton;
     private javax.swing.JScrollPane contentJScrollPane;
+    private javax.swing.JButton declineJButton;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
-    private javax.swing.Box.Filler filler4;
-    private javax.swing.Box.Filler filler5;
+    private javax.swing.Box.Filler filler6;
+    private javax.swing.Box.Filler filler8;
     private javax.swing.JTextField filterJField;
     private javax.swing.JLabel filterJLabel;
     private javax.swing.JButton informationJButton;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTabbedPane mainJTabbedPane;
-    private javax.swing.JLabel nullJLabel1;
-    private javax.swing.JLabel nullJLabel2;
     private javax.swing.JList packageJList;
     private javax.swing.JScrollPane packageJScrollPane;
     private javax.swing.JList resourceJList;
     private javax.swing.JScrollPane resourceJScrollPane;
+    private javax.swing.JButton textileJButton;
     // End of variables declaration//GEN-END:variables
 }

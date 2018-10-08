@@ -23,6 +23,8 @@ import core.event.WorldObjectListener;
 import io.resource.ResourceRequest;
 import io.util.FileUtils;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 import java.io.File;
@@ -47,8 +49,9 @@ public abstract class WorldObject implements WorldResource {
     protected HashMap<String, WorldAction> actionMap;
     protected HashMap<String, Object> attributeMap;
     protected HashMap<String, ResourceRequest> requestMap;
+    protected Polygon polygon;
     // Project Classes
-    protected WorldCellLayer layer;
+    protected RoomLayer layer;
     // Data Types
     protected boolean border;
     protected boolean selected;
@@ -57,6 +60,7 @@ public abstract class WorldObject implements WorldResource {
     protected int depth;
     protected int x;
     protected int y;
+    // Delegate Identification Tags.
     protected String displayName;
     protected String referenceID;
     protected String referenceName;
@@ -64,7 +68,7 @@ public abstract class WorldObject implements WorldResource {
     // Not implemented yet.
     protected String instanceID;
     protected String sha1CheckSum;
-    // Flags
+    // Event Flags
     public static final int FLAG_CREATE = 0xe01;
     public static final int FLAG_DESTROY = 0xe02;
     public static final int FLAG_STEP_START = 0xe03;
@@ -114,6 +118,11 @@ public abstract class WorldObject implements WorldResource {
         this.referenceName = referenceName;
     }
 
+    /**
+     *      The purpose of this method is to assign values to actual fields in the class without knowing the variable name
+     *      so that the user can assign and create any of their own variables and not have to worry about creating mutators and accessors for them.
+     * @param closs 
+     */
     protected void matchFieldValues(Class closs) {
 
         //
@@ -167,7 +176,7 @@ public abstract class WorldObject implements WorldResource {
     @Override
     public void updateAttributes() {
 
-        //
+        // The Basic XML attributes to save for a World Object.
         attributeMap.put("referenceID", referenceID);
         attributeMap.put("displayName", displayName);
         attributeMap.put("packageID", packageID);
@@ -178,6 +187,8 @@ public abstract class WorldObject implements WorldResource {
 
     @Override
     public void shadow(String referenceID, ResourceRequest request) {
+        
+        // Telling the delegate that we're missing something and it needs to give us a resource when its loaded.
         requestMap.put(referenceID, request);
     }
 
@@ -211,7 +222,7 @@ public abstract class WorldObject implements WorldResource {
     }
 
     @Override
-    public String getPackageId() {
+    public String getPackageID() {
         return packageID;
     }
 
@@ -237,12 +248,18 @@ public abstract class WorldObject implements WorldResource {
     public int getY() {
         return y;
     }
+    
+    public Point getPosition() {
+        return new Point(x, y);
+    }
 
-    public WorldCellLayer getLayer() {
+    public RoomLayer getLayer() {
         return layer;
     }
 
     public abstract Rectangle2D.Float getBounds();
+    
+    public abstract Polygon getPreciseBounds();
 
     @Override
     public void setAttributeMap(HashMap<String, Object> attributeMap) {
@@ -266,7 +283,7 @@ public abstract class WorldObject implements WorldResource {
     }
 
     @Override
-    public void setPackageId(String packageID) {
+    public void setPackageID(String packageID) {
         this.packageID = packageID;
     }
 
@@ -296,17 +313,23 @@ public abstract class WorldObject implements WorldResource {
 
     public void setX(int x) {
         this.x = x;
+        if (polygon!=null)polygon.translate(x, 0);
     }
 
     public void setY(int y) {
         this.y = y;
+        if (polygon!=null)polygon.translate(0, y);
+    }
+    
+    public void setPosition(Point position) {
+        
     }
 
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
 
-    public void setLayer(WorldCellLayer layer) {
+    public void setLayer(RoomLayer layer) {
         this.layer = layer;
     }
 

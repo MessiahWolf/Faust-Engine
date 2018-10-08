@@ -189,7 +189,7 @@ public class WorldScript implements WorldResource, WorldScriptInterface {
     }
 
     @Override
-    public String getPackageId() {
+    public String getPackageID() {
         return packageID;
     }
 
@@ -225,7 +225,7 @@ public class WorldScript implements WorldResource, WorldScriptInterface {
     }
 
     @Override
-    public void setPackageId(String packageID) {
+    public void setPackageID(String packageID) {
         this.packageID = packageID;
     }
 

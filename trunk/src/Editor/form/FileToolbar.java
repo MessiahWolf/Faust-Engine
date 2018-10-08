@@ -27,6 +27,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import Editor.tools.WorldCanvasTool;
+import java.io.File;
 
 /**
  *
@@ -38,10 +39,10 @@ public class FileToolbar extends javax.swing.JPanel {
     // Project Classes
     private FaustEditor editor;
     private ResourceDelegate delegate;
-    private WorldCanvas canvas;
+    private RoomCanvas canvas;
     // End of Variable Delcaration
 
-    public FileToolbar(FaustEditor editor, ResourceDelegate delegate, WorldCanvas canvas) {
+    public FileToolbar(FaustEditor editor, ResourceDelegate delegate, RoomCanvas canvas) {
 
         //
         initComponents();
@@ -251,9 +252,12 @@ public class FileToolbar extends javax.swing.JPanel {
             // open a resource dataPackage
             editor.open();
         } else if (delegate.getScanMode() == ResourceDelegate.SCAN_UNBIASED) {
+            
+            // Just in case the file doesn't exist or can't be found.
+            boolean fileExists = new File(editor.getDataDirectory()).exists();
 
             // Locate data Directory first.
-            if (editor.getDataDirectory() == null || editor.getDataDirectory().equals("")) {
+            if (editor.getDataDirectory() == null || editor.getDataDirectory().equals("") || !fileExists) {
                 editor.locateDataDirectory();
             } else {
 
@@ -261,7 +265,8 @@ public class FileToolbar extends javax.swing.JPanel {
                 delegate.flush();
 
                 // Add all files unbiased
-                delegate.performScan(editor.getDataDirectory(), true, editor.acceptsDataPackages());
+                //// System.out.println("Accepts Data Packages: " + editor.acceptsDataPackages());
+                delegate.performScan(editor.getDataDirectory(), editor.acceptsDataPackages());
 
                 //
                 delegate.validate();

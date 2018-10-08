@@ -20,8 +20,6 @@ package core.world;
 
 import io.resource.ResourceRequest;
 import io.util.FileUtils;
-import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.File;
@@ -41,6 +39,7 @@ public abstract class Illustration implements WorldResource {
     // Project Classes
     protected Picture picture;
     // Data Types
+    protected boolean visible = true;
     protected int blockWidth;
     protected int blockHeight;
     protected int blockXOffset;
@@ -185,7 +184,7 @@ public abstract class Illustration implements WorldResource {
     }
 
     @Override
-    public String getPackageId() {
+    public String getPackageID() {
         return packageID;
     }
 
@@ -229,6 +228,10 @@ public abstract class Illustration implements WorldResource {
     public int getBlockRows() {
         return blockRows;
     }
+    
+    public boolean isVisible() {
+        return visible;
+    }
 
     @Override
     public void setAttributeMap(HashMap<String, Object> newMap) {
@@ -246,7 +249,7 @@ public abstract class Illustration implements WorldResource {
     }
 
     @Override
-    public void setPackageId(String packageID) {
+    public void setPackageID(String packageID) {
         this.packageID = packageID;
     }
 
@@ -314,6 +317,10 @@ public abstract class Illustration implements WorldResource {
     public void setBlockHeight(int newHeight) {
         blockHeight = newHeight;
     }
+    
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
 
     @Override
     public void updateAttributes() {
@@ -344,6 +351,7 @@ public abstract class Illustration implements WorldResource {
     public void shadow(String referenceID, ResourceRequest request) {
 
         //
+        // System.out.println(displayName + " Shadowing Resrouce: " + referenceID);
         requests.put(referenceID, request);
     }
 
@@ -361,7 +369,7 @@ public abstract class Illustration implements WorldResource {
 
                 //
                 pictureReferenceID = picture.getReferenceID();
-                picturePackageID = picture.getPackageId();
+                picturePackageID = picture.getPackageID();
 
                 // Every Scenic Object needs to validate after being given its resource.
                 validate();
